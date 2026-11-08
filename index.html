@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quality Control Hub - Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #09090b;
+      color: #f4f4f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      user-select: none;
+      position: relative;
+    }
+
+    /* Constellation Grid Canvas */
+    #portal-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      width: 100%;
+      height: 60px;
+      background: rgba(18, 18, 22, 0.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.2px solid rgba(107, 33, 168, 0.4);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+    .rev-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .rev-r-logo {
+      font-size: 26px;
+      font-weight: 900;
+      color: #000000;
+      -webkit-text-stroke: 1px #ffffff;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+      line-height: 1;
+    }
+    .brand-divider {
+      width: 1.5px;
+      height: 22px;
+      background: rgba(107, 33, 168, 0.5);
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #c084fc;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 90px 20px 80px 20px;
+      gap: 36px;
+      z-index: 10;
+    }
+    .portal-header {
+      text-align: center;
+    }
+    .portal-header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      color: #f4f4f5;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+    .portal-header p {
+      font-size: 15px;
+      color: #a1a1aa;
+    }
+
+    /* Two Portals Grid */
+    .portal-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      max-width: 900px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    /* Samsung One UI Squircle Portal Cards */
+    .portal-card {
+      background: rgba(20, 20, 24, 0.94);
+      backdrop-filter: blur(14px);
+      border: 2px solid rgba(88, 28, 135, 0.5);
+      border-radius: 30px;
+      padding: 42px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 380px;
+      max-width: 90vw;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .portal-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      border-color: #c084fc;
+      box-shadow: 0 0 50px rgba(168, 85, 247, 0.45), 0 25px 60px rgba(0, 0, 0, 0.95);
+    }
+    .portal-card:active {
+      transform: scale(0.97);
+    }
+
+    /* Icons and Floating Neon */
+    @keyframes floatMascot {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+    @keyframes neonGlow {
+      0%, 100% { text-shadow: 0 0 8px #c084fc; transform: scale(1); }
+      50% { text-shadow: 0 0 25px #a855f7, 0 0 38px #7e22ce; transform: scale(1.12); }
+    }
+    .portal-icon {
+      font-size: 64px;
+      margin-bottom: 18px;
+      display: inline-block;
+      animation: floatMascot 3s ease-in-out infinite, neonGlow 2.5s ease-in-out infinite;
+    }
+    .portal-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #e9d5ff;
+      margin-bottom: 10px;
+    }
+    .portal-desc {
+      font-size: 13.5px;
+      color: #a1a1aa;
+      line-height: 1.55;
+      margin-bottom: 28px;
+      min-height: 44px;
+    }
+
+    /* One UI Action Button */
+    .portal-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 15px 22px;
+      background: linear-gradient(135deg, #7e22ce, #581c87);
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 16px;
+      border-radius: 20px;
+      border: 1.5px solid #c084fc;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+      transition: all 0.22s ease;
+    }
+    .portal-card:hover .portal-btn {
+      background: linear-gradient(135deg, #9333ea, #6b21a8);
+      border-color: #e9d5ff;
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.8);
+      transform: translateY(-2px);
+    }
+
+    /* Bottom Ticker */
+    .ticker-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 38px;
+      background: rgba(15, 10, 24, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1.2px solid rgba(168, 85, 247, 0.35);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      z-index: 100;
+    }
+    .ticker-content {
+      white-space: nowrap;
+      display: inline-block;
+      animation: marqueeScroll 24s linear infinite;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #fef08a;
+      letter-spacing: 0.3px;
+    }
+    .ticker-content:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Constellation Canvas Background -->
+  <canvas id="portal-canvas"></canvas>
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="rev-brand">
+      <span class="rev-r-logo">R</span>
+      <div class="brand-divider"></div>
+      <span class="brand-title">Quality Control Toolset</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="portal-header">
+      <h1>Quality Control Toolset</h1>
+      <p>Select your required workspace to access dedicated bots and auditor tools</p>
+    </div>
+
+    <div class="portal-grid">
+
+      <!-- Left Portal: QC Automation Hub (Bots.html) -->
+      <a class="portal-card" href="Bots.html">
+        <div class="portal-icon">🤖</div>
+        <h2 class="portal-title">QC Bots Hub</h2>
+        <p class="portal-desc">Access Complaints Flow, Price Plan Downgrades, and Email Customer Verification bots.</p>
+        <span class="portal-btn">Launch Bots Hub ➔</span>
+      </a>
+
+      <!-- Right Portal: Argus Suite (argus.html) -->
+      <a class="portal-card" href="argus.html">
+        <div class="portal-icon">👁️</div>
+        <h2 class="portal-title">Argus Suite</h2>
+        <p class="portal-desc">Access Argus 100-eye inspector, Lens PII scanner, Watcher tracker, and Phone audio parser.</p>
+        <span class="portal-btn">Launch Argus Suite ➔</span>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- Bottom Ticker -->
+  <footer class="ticker-bar">
+    <div class="ticker-content">
+      ⚠️ Important Disclaimer: Please do not depend on these bots solely — always verify and cross-check official Confluence policies & operational guidelines before logging quality markdowns.
+    </div>
+  </footer>
+
+  <script>
+    /* Interactive Constellation Grid Canvas */
+    (function initConstellation() {
+      const canvas = document.getElementById("portal-canvas");
+      const ctx = canvas.getContext("2d");
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const mouse = { x: null, y: null, maxDist: 150 };
+      window.addEventListener("mousemove", (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      window.addEventListener("mouseleave", () => {
+        mouse.x = null;
+        mouse.y = null;
+      });
+
+      const particleCount = Math.floor((width * height) / 13000);
+      const particles = [];
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          radius: Math.random() * 1.6 + 0.8
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(192, 132, 252, 0.65)";
+          ctx.fill();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 100) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(168, 85, 247, ${0.25 * (1 - dist / 100)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+
+          if (mouse.x !== null) {
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mouse.maxDist) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = `rgba(192, 132, 252, ${0.45 * (1 - dist / mouse.maxDist)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+  </script>
+</body>
+</html>
