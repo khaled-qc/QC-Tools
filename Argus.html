@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Argus Investigation Suite</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #09090b;
+      color: #f4f4f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      user-select: none;
+      position: relative;
+    }
+
+    /* Constellation Canvas */
+    #constellation-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      width: 100%;
+      height: 60px;
+      background: rgba(18, 18, 22, 0.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.2px solid rgba(107, 33, 168, 0.4);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+    .rev-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .rev-r-logo {
+      font-size: 26px;
+      font-weight: 900;
+      color: #000000;
+      -webkit-text-stroke: 1px #ffffff;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+      line-height: 1;
+    }
+    .brand-divider {
+      width: 1.5px;
+      height: 22px;
+      background: rgba(107, 33, 168, 0.5);
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #c084fc;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 95px 20px 80px 20px;
+      gap: 28px;
+      z-index: 10;
+    }
+    .hub-header {
+      text-align: center;
+    }
+    .hub-header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #f4f4f5;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .hub-header p {
+      font-size: 14px;
+      color: #a1a1aa;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+      max-width: 1350px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    /* Samsung One UI Squircle Cards */
+    .bot-card {
+      background: rgba(20, 20, 24, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(88, 28, 135, 0.45);
+      border-radius: 26px;
+      padding: 26px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 270px;
+      position: relative;
+    }
+    .bot-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: #a855f7;
+      box-shadow: 0 0 35px rgba(168, 85, 247, 0.35), 0 20px 45px rgba(0, 0, 0, 0.95);
+    }
+    .bot-card:active {
+      transform: scale(0.97);
+    }
+
+    /* Center Card Special Pop (Argus) */
+    .bot-card-featured {
+      width: 330px;
+      padding: 34px 24px;
+      border: 2px solid #a855f7;
+      background: rgba(24, 21, 36, 0.95);
+      box-shadow: 0 0 45px rgba(168, 85, 247, 0.35), 0 20px 50px rgba(0, 0, 0, 0.9);
+      transform: scale(1.06);
+      z-index: 2;
+    }
+    .bot-card-featured:hover {
+      transform: translateY(-8px) scale(1.09);
+      border-color: #c084fc;
+      box-shadow: 0 0 55px rgba(192, 132, 252, 0.5), 0 25px 60px rgba(0, 0, 0, 0.98);
+    }
+
+    /* Mascots Animations */
+    @keyframes floatMascot {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(3deg); }
+    }
+    @keyframes neonGlow {
+      0%, 100% { text-shadow: 0 0 6px #c084fc; transform: scale(1); }
+      50% { text-shadow: 0 0 20px #a855f7, 0 0 30px #7e22ce; transform: scale(1.12); }
+    }
+    .card-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: floatMascot 3s ease-in-out infinite, neonGlow 2.5s ease-in-out infinite;
+    }
+    .card-icon-big {
+      font-size: 64px;
+    }
+    .card-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #c084fc;
+      margin-bottom: 8px;
+    }
+    .bot-card-featured .card-title {
+      font-size: 23px;
+      color: #e9d5ff;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #a1a1aa;
+      line-height: 1.5;
+      margin-bottom: 22px;
+      min-height: 48px;
+    }
+
+    /* Samsung One UI Button with Spring Ripple */
+    .drag-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 13px 18px;
+      background: linear-gradient(135deg, #6b21a8, #581c87);
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14.5px;
+      border-radius: 18px;
+      border: 1.5px solid #a855f7;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+      cursor: grab;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drag-btn:hover {
+      background: linear-gradient(135deg, #7e22ce, #6b21a8);
+      border-color: #c084fc;
+      box-shadow: 0 0 28px rgba(168, 85, 247, 0.7);
+      transform: translateY(-2px);
+    }
+    .drag-btn:active {
+      cursor: grabbing;
+      transform: scale(0.95);
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+    }
+    .bot-card-featured .drag-btn {
+      padding: 15px 20px;
+      font-size: 16px;
+      background: linear-gradient(135deg, #7e22ce, #581c87);
+      border-color: #c084fc;
+      box-shadow: 0 0 24px rgba(192, 132, 252, 0.5);
+    }
+
+    .back-btn-hub {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #a855f7;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .back-btn-hub:hover {
+      color: #c084fc;
+      text-decoration: underline;
+    }
+
+    /* Bottom Ticker */
+    .ticker-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 38px;
+      background: rgba(15, 10, 24, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1.2px solid rgba(168, 85, 247, 0.35);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      z-index: 100;
+    }
+    .ticker-content {
+      white-space: nowrap;
+      display: inline-block;
+      animation: marqueeScroll 24s linear infinite;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #fef08a;
+      letter-spacing: 0.3px;
+    }
+    .ticker-content:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Constellation Canvas -->
+  <canvas id="constellation-canvas"></canvas>
+
+  <!-- Top Bar -->
+  <header class="top-nav">
+    <div class="rev-brand">
+      <span class="rev-r-logo">R</span>
+      <div class="brand-divider"></div>
+      <span class="brand-title">Argus Investigation Suite</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="hub-header">
+      <h1>Argus Suite Hub</h1>
+      <p>Click to launch directly, or drag to your bookmarks bar to install</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: Lens -->
+      <div class="bot-card">
+        <div class="card-icon">🔎</div>
+        <h2 class="card-title">Lens</h2>
+        <p class="card-desc">Redact PII entities, highlight sensitive personal data, and identify chat duplicates.</p>
+        <a id="drag-lens" class="drag-btn" href="#">Lens🔎</a>
+      </div>
+
+      <!-- Card 2: Argus (Center & Featured Big) -->
+      <div class="bot-card bot-card-featured">
+        <div class="card-icon card-icon-big">👁️</div>
+        <h2 class="card-title">Argus</h2>
+        <p class="card-desc">100-eye inspection engine, policy link injector, trigger words auditor, and timer control.</p>
+        <a id="drag-argus" class="drag-btn" href="#">Argus👁️</a>
+      </div>
+
+      <!-- Card 3: Watcher -->
+      <div class="bot-card">
+        <div class="card-icon">🔭</div>
+        <h2 class="card-title">Watcher</h2>
+        <p class="card-desc">Real-time agent tracking dashboard, audit deduplication history, and pass rate charts.</p>
+        <a id="drag-watcher" class="drag-btn" href="#">Watcher 🔭</a>
+      </div>
+
+      <!-- Card 4: Phone -->
+      <div class="bot-card">
+        <div class="card-icon">📞</div>
+        <h2 class="card-title">Phone</h2>
+        <p class="card-desc">Live phone audio call transcript parser, speech bubble analyzer, and role detector.</p>
+        <a id="drag-phone" class="drag-btn" href="#">Phone📞</a>
+      </div>
+
+    </div>
+
+    <a class="back-btn-hub" href="./">← Return to QC Hub</a>
+  </main>
+
+  <!-- Bottom Ticker -->
+  <footer class="ticker-bar">
+    <div class="ticker-content">
+      ⚠️ Important Disclaimer: Please do not depend on these bots solely — always verify and cross-check official Confluence policies & operational guidelines before logging quality markdowns.
+    </div>
+  </footer>
+
+  <script>
+    /* 1. Interactive Constellation Grid Effect */
+    (function initConstellation() {
+      const canvas = document.getElementById("constellation-canvas");
+      const ctx = canvas.getContext("2d");
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const mouse = { x: null, y: null, maxDist: 140 };
+      window.addEventListener("mousemove", (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      window.addEventListener("mouseleave", () => {
+        mouse.x = null;
+        mouse.y = null;
+      });
+
+      const particleCount = Math.floor((width * height) / 13000);
+      const particles = [];
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          radius: Math.random() * 1.6 + 0.8
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(192, 132, 252, 0.65)";
+          ctx.fill();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 100) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(168, 85, 247, ${0.25 * (1 - dist / 100)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+
+          if (mouse.x !== null) {
+            const dx = p.x - mouse.x;
+            const dy = p.y - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mouse.maxDist) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = `rgba(192, 132, 252, ${0.45 * (1 - dist / mouse.maxDist)})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    /* 2. Tool Scripts */
+    var watcherCode = `(function(){if(window.argusWatcherSession){window.argusWatcherSession.openDash();return;}var d=document;var st=d.createElement("style");st.innerHTML="#argus-watcher-container{position:fixed;top:45%;left:8px;transform:translateY(-50%);z-index:9999999;background:#0f172a;color:#fff;padding:8px 6px;border-radius:14px;border:1.5px solid #00ffcc;box-shadow:0 10px 25px rgba(0,255,204,0.3);font-family:sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:46px;box-sizing:border-box;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);overflow:hidden;}.aw-btn{background:#1e2d4a;color:#00ffcc;border:1px solid rgba(0,255,204,0.3);padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:bold;font-size:12px;width:100%;text-align:left;box-sizing:border-box;display:flex;align-items:center;gap:8px;transition:all 0.2s ease;white-space:nowrap;}.aw-btn:hover{background:#00ffcc;color:#0f172a;transform:scale(1.04);box-shadow:0 4px 12px rgba(0,255,204,0.4);}.aw-btn:active{transform:scale(0.95);}.aw-label{display:none;font-size:11px;font-weight:700;}#argus-agent-analyzer{position:fixed;top:5%;left:20%;z-index:99999999;width:820px;max-height:85vh;background:#0b1329;color:#f8fafc;border:1.5px solid #00ffcc;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;resize:both;font-family:sans-serif;}.a-card{background:#152238;padding:12px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.08);}.a-badge-pass{background:#022c22;color:#34d399;border:1px solid #10b981;padding:3px 8px;border-radius:6px;font-weight:bold;font-size:11px;}.a-badge-gap{background:#450a0a;color:#fca5a5;border:1px solid #ef4444;padding:3px 8px;border-radius:6px;font-weight:bold;font-size:11px;}#an-agent-grid::-webkit-scrollbar,#prof-history::-webkit-scrollbar{width:8px;}#an-agent-grid::-webkit-scrollbar-thumb,#prof-history::-webkit-scrollbar-thumb{background:#00ffcc;border-radius:4px;}.date-box{width:100%;padding:8px;background:#152238;border:1px solid rgba(0,255,204,0.3);color:#fff;border-radius:8px;font-size:12px;outline:none;text-align:center;box-sizing:border-box;}";d.head.appendChild(st);var sessionAgents=new Set();var manualOffset=0;function updateUI(){try{var count=sessionAgents.size+manualOffset;if(count<0)count=0;var badge=d.getElementById("aw-count-num");if(badge&&badge.innerText!=count){badge.innerText=count;}}catch(err){}}function autoTrackCurrentAgent(){try{var txt=d.body.innerText||"";var m=txt.match(/([a-z0-9._%+-]+@(?:ext\.)?revolut\.com)/ig);if(m&&m.length){for(var i=0;i<m.length;i++){var ag=m[i].toLowerCase().trim();if(!ag.includes("khaled")&&!ag.includes("admin")){if(!sessionAgents.has(ag)){sessionAgents.add(ag);var logs=JSON.parse(localStorage.getItem("argus_logs")||"[]");var u=location.href.split("?")[0];logs.push({agent:ag.split("@")[0],email:ag,url:u,key:u+"#"+ag,date:new Date().toLocaleDateString(),time:new Date().toLocaleTimeString(),ts:Date.now()});localStorage.setItem("argus_logs",JSON.stringify(logs));}break;}}}}catch(e){}updateUI();try{var ev=JSON.parse(localStorage.getItem("argus_qa_evals")||"{}"),u=location.href.split("?")[0],bl=Array.from(d.querySelectorAll("div, section, article"));bl.forEach(function(s){var t=(s.innerText||"").trim(),em=t.match(/([a-z0-9._%+-]+@(?:ext\.)?revolut\.com)/i);if(em){var targetEmail=em[1].toLowerCase().trim();if(t.toUpperCase().includes("FAIL")){var g=[],tags=t.match(/#[a-zA-Z0-9_-]+/g);if(tags){tags.forEach(function(tg){if(!tg.includes("#no_issue")&&!tg.includes("#none"))g.push(tg);});}var lines=t.split("\n").map(function(l){return l.trim();}).filter(Boolean);lines.forEach(function(l){if((l.includes("KG ")||l.includes("AGENT FAILURE")||l.includes("OTHER")||l.includes("RI ")||l.includes("CX "))&&!l.includes("QC REVIEW")&&!l.includes("Has agent"))g.push(l);});if(!g.length)g.push("Key Gap / FAIL Detected");ev[u+"#"+targetEmail]={status:"KEY_GAP",gap:Array.from(new Set(g)).join(" | "),date:new Date().toLocaleDateString()};}}});localStorage.setItem("argus_qa_evals",JSON.stringify(ev));}catch(e){}}var w=d.createElement("div");w.id="argus-watcher-container";w.innerHTML='<div id="aw-badge-box" style="padding:6px;border-radius:8px;background:#1e2d4a;border:1px solid rgba(0,255,204,0.4);cursor:pointer;width:100%;text-align:center;box-sizing:border-box;" title="Click to show/hide controls"><b id="aw-count-num" style="color:#00ffcc;font-size:16px;font-weight:800;">0</b></div><div id="aw-controls" style="display:none;flex-direction:column;align-items:flex-start;gap:6px;width:100%;"><button class="aw-btn" id="aw-plus"><span>➕</span><span class="aw-label">Add Agent</span></button><button class="aw-btn" id="aw-minus"><span>➖</span><span class="aw-label">Minus Agent</span></button><button class="aw-btn" id="aw-reset" style="color:#fca5a5;border-color:rgba(239,68,68,0.4);"><span>↺</span><span class="aw-label">Reset All</span></button><button class="aw-btn" id="aw-hide" style="color:#fbbf24;"><span>👁️</span><span class="aw-label">Hide Controls</span></button><button class="aw-btn" id="btn-open-dash" style="background:#00ffcc;color:#0f172a;"><span>📊</span><span class="aw-label">Dashboard</span></button><button id="btn-close-watcher" style="background:transparent;color:#ef4444;border:none;cursor:pointer;font-weight:bold;font-size:13px;padding:2px;margin-left:8px;">✖</button></div>';d.body.appendChild(w);setInterval(autoTrackCurrentAgent,1000);w.onmouseenter=function(){w.style.width="135px";var ctrl=d.getElementById("aw-controls");if(ctrl)ctrl.style.display="flex";var lbls=d.querySelectorAll(".aw-label");lbls.forEach(function(l){l.style.display="inline";});};w.onmouseleave=function(){w.style.width="46px";var ctrl=d.getElementById("aw-controls");if(ctrl)ctrl.style.display="none";var lbls=d.querySelectorAll(".aw-label");lbls.forEach(function(l){l.style.display="none";});};d.getElementById("aw-plus").onclick=function(){manualOffset++;updateUI();};d.getElementById("aw-minus").onclick=function(){manualOffset--;updateUI();};d.getElementById("aw-reset").onclick=function(){sessionAgents.clear();manualOffset=0;updateUI();};var ctrl=d.getElementById("aw-controls");d.getElementById("aw-hide").onclick=function(){ctrl.style.display="none";};d.getElementById("aw-badge-box").onclick=function(){ctrl.style.display=(ctrl.style.display==="none")?"flex":"none";};d.getElementById("btn-close-watcher").onclick=function(){w.remove();window.argusWatcherSession=null;};d.getElementById("btn-open-dash").onclick=function(){openDash();};window.argusWatcherSession={openDash:openDash};function openDash(){var oldDash=d.getElementById("argus-agent-analyzer");if(oldDash){oldDash.remove();return;}var m=d.createElement("div");m.id="argus-agent-analyzer";m.innerHTML='<div style="cursor:move;padding:8px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;justify-content:space-between;align-items:center;" id="an-drag-header"><span style="font-weight:800;color:#00ffcc;font-size:14px;">👁️ Argus Watcher Dashboard</span><button id="an-close" style="background:rgba(239,68,68,0.25);color:#ef4444;border:1px solid rgba(239,68,68,0.4);padding:3px 10px;border-radius:6px;cursor:pointer;font-weight:bold;">✖</button></div><div id="an-main-view" style="display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden;"><input id="an-search" type="text" placeholder="Search Agent Name or Email..." style="width:100%;padding:10px;background:#152238;border:1px solid rgba(0,255,204,0.3);color:#fff;border-radius:8px;font-size:12px;outline:none;"><div style="display:flex;gap:8px;align-items:center;"><span style="font-size:11px;color:#94a3b8;font-weight:bold;white-space:nowrap;">📅 Date Filter:</span><input id="an-day" class="date-box" type="text" placeholder="DD" maxlength="2"><input id="an-month" class="date-box" type="text" placeholder="MM" maxlength="2"><input id="an-year" class="date-box" type="text" placeholder="YYYY" maxlength="4"></div><div id="an-agent-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-height:380px;overflow-y:auto!important;padding-right:8px;"></div></div><div id="an-profile-view" style="display:none;flex-direction:column;gap:12px;flex:1;overflow-y:auto;"><button id="an-back" style="background:#1e2d4a;color:#00ffcc;border:1px solid rgba(0,255,204,0.3);padding:6px 14px;border-radius:8px;font-weight:bold;cursor:pointer;width:fit-content;font-size:11px;">⬅ Back to Agents List</button><div style="background:#152238;padding:14px;border-radius:12px;border-left:4px solid #00ffcc;display:flex;justify-content:space-between;align-items:center;"><div><div id="prof-name" style="font-size:16px;font-weight:800;color:#fff;">-</div><div id="prof-email" style="font-size:11px;color:#94a3b8;">-</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:800;color:#f87171;"><span id="prof-audits">0</span> Audits / <span id="prof-gaps">0</span> Key Gaps</div></div></div><div style="background:#152238;padding:12px;border-radius:12px;"><div style="font-size:11px;font-weight:bold;color:#cbd5e0;margin-bottom:8px;">📊 Agent Quality Score Bar</div><div id="prof-svg-chart" style="display:flex;align-items:center;justify-content:center;min-height:80px;"></div></div><div style="font-size:11px;font-weight:bold;color:#cbd5e0;">📋 Deduplicated Audit History</div><div id="prof-history" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto!important;max-height:200px;"></div></div>';d.body.appendChild(m);d.getElementById("an-close").onclick=function(){m.remove();};var h=d.getElementById("an-drag-header"),isDrag=false,sx,sy,il,it;h.onmousedown=function(e){isDrag=true;sx=e.clientX;sy=e.clientY;var r=m.getBoundingClientRect();il=r.left;it=r.top;d.onmousemove=function(e2){if(isDrag){m.style.left=(il+e2.clientX-sx)+"px";m.style.top=(it+e2.clientY-sy)+"px";}};d.onmouseup=function(){isDrag=false;d.onmousemove=null;d.onmouseup=null;};};function renderMain(){var lg=JSON.parse(localStorage.getItem("argus_logs")||"[]"),ev=JSON.parse(localStorage.getItem("argus_qa_evals")||"{}"),q=(d.getElementById("an-search").value||"").toLowerCase().trim(),day=(d.getElementById("an-day").value||"").trim(),month=(d.getElementById("an-month").value||"").trim(),year=(d.getElementById("an-year").value||"").trim(),g=d.getElementById("an-agent-grid");g.innerHTML="";var map={};lg.forEach(function(l){var n=l.agent||"Unknown",k=l.key||(l.url+"#"+l.email),dt=l.date||"",ts=l.ts||0;if(!map[n]){map[n]={name:n,email:l.email||"",keys:new Set(),uniqueKeys:[],dates:new Set(),lastTS:0};}if(!map[n].keys.has(k)){map[n].keys.add(k);map[n].dates.add(dt);map[n].uniqueKeys.push({key:k,time:dt+" "+l.time,date:dt,url:l.url,ts:ts});}if(ts>map[n].lastTS)map[n].lastTS=ts;});var lst=Object.values(map).filter(function(a){var matchName=a.name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q);var matchDate=Array.from(a.dates).some(function(dStr){var passD=day?dStr.includes(day):true;var passM=month?dStr.includes(month):true;var passY=year?dStr.includes(year):true;return passD&&passM&&passY;});return matchName&&matchDate;});lst.sort(function(a,b){return b.lastTS-a.lastTS;});if(!lst.length){g.innerHTML='<div style="color:#64748b;font-size:12px;padding:10px;">No agents recorded matching your search & date filter.</div>';return;}lst.forEach(function(a){var gc=0;a.uniqueKeys.forEach(function(uk){if(ev[uk.key]&&ev[uk.key].status==="KEY_GAP")gc++;});var cd=d.createElement("div");cd.className="a-card";cd.onclick=function(){openProf(a,ev);};cd.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:bold;color:#fff;font-size:12px;">🎧 '+a.name+'</div><span style="font-size:10px;background:#1e2d4a;border:1px solid rgba(0,255,204,0.3);padding:2px 6px;border-radius:4px;color:#00ffcc;font-weight:bold;">'+a.uniqueKeys.length+' Cases</span></div><div style="font-size:10px;color:#94a3b8;margin-top:3px;">'+a.email+'</div><div style="font-size:11px;font-weight:800;margin-top:6px;display:flex;justify-content:space-between;align-items:center;"><span>Status:</span>'+(gc>0?'<span class="a-badge-gap">Key Gap: '+gc+'</span>':'<span class="a-badge-pass">Passed (100%)</span>')+'</div>';g.appendChild(cd);});}function openProf(agent,ev){var cev=JSON.parse(localStorage.getItem("argus_qa_evals")||"{}"),gc=0;agent.uniqueKeys.forEach(function(uk){if(cev[uk.key]&&cev[uk.key].status==="KEY_GAP")gc++;});d.getElementById("an-main-view").style.display="none";d.getElementById("an-profile-view").style.display="flex";d.getElementById("prof-name").innerText=agent.name;d.getElementById("prof-email").innerText=agent.email;d.getElementById("prof-audits").innerText=agent.uniqueKeys.length;d.getElementById("prof-gaps").innerText=gc;var hEl=d.getElementById("prof-history");hEl.innerHTML="";var sortedKeys=agent.uniqueKeys.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0);});sortedKeys.forEach(function(k){var e=cev[k.key]||{status:"PASSED",gap:"Passed (100%)"},rw=d.createElement("div");rw.style.cssText="background:#152238;padding:8px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:11px;border-left:4px solid "+("KEY_GAP"===e.status?"#ef4444":"#10b981")+";";rw.innerHTML='<div><span style="color:#fff;font-weight:bold;">'+k.time+'</span> - '+("KEY_GAP"===e.status?'<span class="a-badge-gap">'+e.gap+'</span>':'<span class="a-badge-pass">Passed</span>')+'</div><div style="display:flex;gap:6px;"><button class="btn-toggle" style="background:#ef4444;color:#fff;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;font-size:9px;font-weight:bold;">Mark Gap 🚨</button><a href="'+k.url+'" target="_blank" style="color:#00ffcc;text-decoration:none;font-weight:bold;background:rgba(0,255,204,0.1);padding:3px 6px;border-radius:4px;border:1px solid rgba(0,255,204,0.3);">Open 🔗</a></div>';rw.querySelector(".btn-toggle").onclick=function(){var r=prompt("Enter Key Gap Reason (or hashtag):","#content_retrieval_bo");if(r){cev[k.key]={status:"KEY_GAP",gap:r,date:new Date().toLocaleDateString()};localStorage.setItem("argus_qa_evals",JSON.stringify(cev));openProf(agent,cev);}};hEl.appendChild(rw);});var svgBox=d.getElementById("prof-svg-chart"),tc=agent.uniqueKeys.length,pc=tc-gc,passPct=tc>0?Math.round((pc/tc)*100):100;svgBox.innerHTML='<svg width="240" height="80" viewBox="0 0 240 80"><rect x="10" y="15" width="220" height="18" rx="9" fill="#152238" stroke="rgba(255,255,255,0.1)"/><rect x="10" y="15" width="'+(2.2*passPct)+'" height="18" rx="9" fill="#10b981"/><text x="120" y="29" fill="#fff" font-size="10" font-weight="800" text-anchor="middle">'+passPct+'% Pass Rate</text><text x="10" y="58" fill="#34d399" font-size="11" font-weight="bold">✔ Passed: '+pc+'</text><text x="130" y="58" fill="#f87171" font-size="11" font-weight="bold">✖ Key Gaps: '+gc+'</text></svg>';}d.getElementById("an-back").onclick=function(){d.getElementById("an-profile-view").style.display="none";d.getElementById("an-main-view").style.display="block";renderMain();};d.getElementById("an-search").oninput=renderMain;d.getElementById("an-day").oninput=renderMain;d.getElementById("an-month").oninput=renderMain;d.getElementById("an-year").oninput=renderMain;renderMain();}})();`;
+
+    var lensCode = `(function(){'use strict';if(window.__argusLensRunning){alert('👁️ Argus Lens Active! Chat is secured.');return;}window.__argusLensRunning=true;const COMMON_IGNORES=['please wait','hello','hi','thank you','thanks','one moment please','how can i help you','good morning','good evening','welcome','sure','okay','ok'];const REGEX_FILE=/[\\w\\-. ]+\\.(pdf|png|jpg|jpeg|docx?|xlsx?|csv|zip|txt)\\b/gi;const REGEX_EMAIL=/\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b/gi;const REGEX_DATE_TEST=/^(?:0?[1-9]|[12]\\d|3[01])[-/.](?:0?[1-9]|1[02])[-/.](?:19|20)\\d{2}$|^(?:19|20)\\d{2}[-/.]?(?:0?[1-9]|1[02])[-/.](?:0?[1-9]|[12]\\d|3[01])$/;const REGEX_PHONE=/(?:\\+|00)?\\d[\\d\\s.\\-()]{7,18}\\d/g;const REGEX_NAMES=/\\b(Ahmad|Ahmed|Mohamed|Mohammed|Youssef|Omar|Ali|Khaled|Sara|Mona|Nour|John|Mary|David|Sarah|Michael|James|Robert|Hassan|Hussein|Ibrahim|Mostafa|Mahmoud)\\b/gi;const STYLES={NAME:{bg:'rgba(255,165,0,0.25)',border:'#d97706',tag:'[PII Name]'},PHONE:{bg:'rgba(255,255,0,0.3)',border:'#ca8a04',tag:'[PII Phone]'},EMAIL:{bg:'rgba(255,165,0,0.25)',border:'#ea580c',tag:'[PII Email]'},DUP1:{bg:'rgba(56,189,248,0.25)',border:'#0284c7',tag:'[Duplicate 1]'},DUP2:{bg:'rgba(236,72,153,0.25)',border:'#db2777',tag:'[Duplicate 2]'}};const toast=document.createElement('div');toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999999;background:#0f172a;color:#fff;padding:12px 24px;border-radius:10px;font-family:sans-serif;font-size:14px;font-weight:bold;box-shadow:0 10px 25px rgba(0,0,0,0.4);border:1px solid #334155;transition:opacity 0.5s ease;text-align:center;';toast.innerHTML='👁️ Argus Lens Active! Chat is secured.';document.body.appendChild(toast);setTimeout(()=>{toast.style.opacity='0';setTimeout(()=>toast.remove(),500);},3000);let totalPIIDetected=0;let currentIndex=-1;const uiBox=document.createElement('div');uiBox.id='argus-counter-ui';uiBox.style.cssText='position:fixed;top:120px;left:20px;z-index:999999;background:#0f172a;color:#fff;padding:10px 16px;border-radius:8px;font-family:sans-serif;font-size:13px;font-weight:bold;box-shadow:0 4px 14px rgba(0,0,0,0.3);border:1px solid #334155;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:transform 0.1s;';uiBox.title='Click to jump to next PII item!';uiBox.innerHTML='👁️ <span>Argus Lens:</span> <span id="argus-count-num" style="color:#f59e0b;font-size:15px;">0</span> detected';document.body.appendChild(uiBox);uiBox.addEventListener('mouseenter',()=>uiBox.style.transform='scale(1.03)');uiBox.addEventListener('mouseleave',()=>uiBox.style.transform='scale(1)');function findScrollableContainer(){const elements=Array.from(document.querySelectorAll('div, section, main'));for(let el of elements){const style=window.getComputedStyle(el);if((style.overflowY==='scroll'||style.overflowY==='auto')&&el.scrollHeight>el.clientHeight){return el;}}return window;}uiBox.addEventListener('click',async()=>{runScan();let piiMarks=Array.from(document.querySelectorAll('.pii-mark')).filter(m=>!m.textContent.includes('[Duplicate'));if(!piiMarks.length)return;currentIndex=(currentIndex+1)%piiMarks.length;const target=piiMarks[currentIndex];const container=findScrollableContainer();if(container!==window){const targetRect=target.getBoundingClientRect();const containerRect=container.getBoundingClientRect();container.scrollTop+=targetRect.top-containerRect.top-(containerRect.height/2);}else{target.scrollIntoView({behavior:'smooth',block:'center'});}target.style.transition='outline 0.2s';target.style.outline='3px solid #38bdf8';setTimeout(()=>{target.style.outline='none';},1200);const el=document.getElementById('argus-count-num');if(el)el.textContent=\`\${currentIndex+1}/\${piiMarks.length}\`;});function updateCounter(addPIICount){if(addPIICount>0){totalPIIDetected+=addPIICount;const el=document.getElementById('argus-count-num');if(el&&currentIndex===-1)el.textContent=totalPIIDetected;}}function scanTextNode(node){if(!node||node.nodeType!==3)return 0;const text=node.nodeValue;if(!text||text.trim().length<3)return 0;if(node.parentNode&&node.parentNode.classList&&node.parentNode.classList.contains('pii-mark'))return 0;if(REGEX_FILE.test(text))return 0;let matches=[];let m;while((m=REGEX_EMAIL.exec(text))!==null)matches.push({s:m.index,e:m.index+m[0].length,t:m[0],k:'EMAIL'});while((m=REGEX_PHONE.exec(text))!==null){const fullMatch=m[0].trim();if(!REGEX_DATE_TEST.test(fullMatch)){const digits=fullMatch.replace(/\\D/g,'');if(digits.length>=7&&digits.length<=15){matches.push({s:m.index,e:m.index+fullMatch.length,t:fullMatch,k:'PHONE'});}}}while((m=REGEX_NAMES.exec(text))!==null)matches.push({s:m.index,e:m.index+m[0].length,t:m[0],k:'NAME'});if(!matches.length)return 0;matches.sort((a,b)=>a.s-b.s);const clean=[];let last=0;matches.forEach(x=>{if(x.s>=last){clean.push(x);last=x.e;}});const frag=document.createDocumentFragment();let cur=0;clean.forEach(x=>{if(x.s>cur)frag.appendChild(document.createTextNode(text.substring(cur,x.s)));const c=STYLES[x.k];const wrapper=document.createElement('span');wrapper.className='pii-mark';wrapper.style.cssText=\`background-color:\${c.bg};border-bottom:2px solid \${c.border};border-radius:3px;padding:1px 3px;margin:0 1px;display:inline-block;font-weight:bold;color:#000;\`;wrapper.appendChild(document.createTextNode(x.t));const tag=document.createElement('span');tag.style.cssText='font-size:0.75em;margin-left:4px;';tag.textContent=' '+c.tag;wrapper.appendChild(tag);frag.appendChild(wrapper);cur=x.e;});if(cur<text.length)frag.appendChild(document.createTextNode(text.substring(cur)));if(node.parentNode)node.parentNode.replaceChild(frag,node);return clean.length;}function checkDuplicates(doc){const map=new Map();const walker=doc.createTreeWalker(doc.body,NodeFilter.SHOW_TEXT,null,false);let node;const candidates=[];while(node=walker.nextNode()){const p=node.parentNode;if(!p||['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(p.tagName)||p.closest('#argus-counter-ui')||p.classList.contains('pii-mark'))continue;const raw=node.nodeValue?node.nodeValue.trim():'';const clean=raw.toLowerCase().replace(/\\s+/g,' ');if(clean.length>=40&&!COMMON_IGNORES.some(ig=>clean.includes(ig))){candidates.push({node,raw,clean});}}candidates.forEach(item=>{if(!map.has(item.clean))map.set(item.clean,[]);map.get(item.clean).push(item);});map.forEach((list)=>{if(list.length>1){list.forEach((item,idx)=>{const k=idx===0?'DUP1':'DUP2';const c=STYLES[k];const p=item.node.parentNode;if(p&&!p.classList.contains('pii-mark')&&item.node.nodeType===3){const wrapper=document.createElement('span');wrapper.className='pii-mark';wrapper.style.cssText=\`background-color:\${c.bg};border-bottom:2px solid \${c.border};border-radius:3px;padding:1px 3px;margin:0 1px;display:inline;font-weight:bold;color:#000;\`;wrapper.appendChild(document.createTextNode(item.raw));const tag=document.createElement('span');tag.style.cssText='font-size:0.75em;margin-left:4px;display:inline;';tag.textContent=' '+c.tag;wrapper.appendChild(tag);p.replaceChild(wrapper,item.node);}});}});}function walkTree(element){const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT,null,false);const textNodes=[];let node;while(node=walker.nextNode()){if(node.parentNode&&!['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(node.parentNode.tagName)){textNodes.push(node);}}let found=0;textNodes.forEach(tn=>{found+=scanTextNode(tn);});return found;}function runScan(){checkDuplicates(document);let piiCount=walkTree(document.body);document.querySelectorAll('iframe').forEach(f=>{try{if(f.contentDocument){checkDuplicates(f.contentDocument);piiCount+=walkTree(f.contentDocument.body);}}catch(e){}});updateCounter(piiCount);}runScan();let scrollTimer;window.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(runScan,150);},{passive:true});const observer=new MutationObserver(()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(runScan,200);});observer.observe(document.body,{childList:true,subtree:true});})();`;
+
+    var argusCode = `(function(){const STEPS=[{label:'AIR chat',color:'#00FFFF',terms:['This ticket was raised from assistant ticket','Assistant ticket']},{label:'Step 7: Formal Complaint Offer',color:'#8A2BE2',terms:['I\\'m sorry you’re dissatisfied with our services. I remain available to discuss the details of this decision with you and ensure all your questions are fully answered','Alternatively, if you\\'d like to file a formal complaint, I can log it on your behalf or you can complete']},{label:'Step 5: Share Mandatory A-text',color:'#DDA0DD',terms:['I understand the frustration this situation has caused. I’m sorry for the trouble, and I appreciate your patience. Your concern has been our priority from the outset, and I’ll continue working on it until it’s resolved','I\\'m understand the frustration this situation has caused. I\\'m sorry for the trouble, and I appreciate your patience. Your concern has been our priority from the outset, and I\\'ll continue working on it until it\\'s resolved. If you prefer, we can also escalate this through our','I\\'m sorry for the trouble this has caused, and I appreciate your patience. Your concern has been our priority from the outset, and I\\'ll continue working on it until it\\'s resolved. If you prefer, we can also escalate this through','I apologise for any frustration this situation has caused you. Your concern has been our priority from the outset, and I\\'ll continue working on it until it\\'s resolved. If you prefer, we can also escalate this through our','I\\'m sorry for the inconvenience you\\'ve experienced, and I understand how important this matter is to you. Your concern has been our priority from the outset, and I\\'ll continue working on it until it\\'s resolved. If you prefer, we can also escalate this through our','I sincerely apologise for the experience you\\'ve had and understand how disappointing this situation must be. Thank you for your continued patience while we look into this matter. Your concern is important to us, and I\\'ll remain personally engaged until it is fully addressed. If you\\'d like, we can also take this further through our','I apologise that we did not meet your expectations. Please be assured that your concern has been given our utmost attention. I am available to assist you in submitting a formal complaint and will guide you through the process','Kindly note that your complaint will be addressed in accordance with our standard policies and procedures','The decision was made after careful consideration and in accordance with the established guidelines that Revolut is required to follow. Should you wish to express further dissatisfaction, you have the option to escalate the matter by submitting a formal complaint at any time. Kindly inform me if you would like to proceed, and I will provide the necessary details','Please note that our resolution will always align with our standard policies and procedures','I’m sorry that our service did not meet your expectations. Please be assured that we’ve treated your concern with the highest priority. If you wish to submit a formal complaint, I’m here to guide you through each step. Kindly note that any resolution will be addressed in accordance with our standard policies and procedures','I regret that we were not able to meet your expectations on this occasion. Your concern has been given our full attention from the start. If you’d like to escalate the matter further, I can assist you in raising a formal complaint. Please note that the outcome will always follow our established policies and procedures','I apologise for not meeting your expectations. Your concern has been reviewed with care and priority. Should you wish to take this further, I can help you initiate a formal complaint and ensure you have all the necessary information. Please remember that all complaints are addressed in line with our standard policies and procedures','I understand you may be dissatisfied with this outcome, and I’m sorry we did not meet your expectations. This matter has been given our utmost attention, and if you’d like to escalate it, I can guide you through the formal complaint process. All resolutions will be handled in accordance with our established policies and procedures','I regret any disappointment this decision may have caused. Please rest assured that your concern has been carefully considered in line with our guidelines. If you wish to escalate, I can walk you through the process of submitting a formal complaint. Kindly note that any resolution will always align with our standard policies and procedures','I understand this is frustrating. Your dispute is being handled under card-scheme rules, and we\\'ll update you as soon as there\\'s an outcome. If you\\'d like, I can assist you in submitting a formal complaint and guide you through the process','Please note that submitting a complaint does not speed up the chargeback process','I\\'m sorry that our service did not meet your expectations. Please be assured that we\\'ve treated your concern with the highest priority. If you wish, I can help you submit a formal complaint and guide you through the process','Please note that submitting a complaint will not alter the chargeback process or its timeframe. The case must proceed in accordance with card-scheme rules and established procedures','I regret that we were not able to meet your expectations on this occasion. Your concern has been given our full attention from the start. If you\\'d like to escalate the matter further, I can assist you in raising a formal complaint','Please note that submitting a complaint does not speed up the chargeback process. Card disputes must follow card scheme rules and internal process eligibility']},{label:'Step 2 / De-escalation',color:'#FF8C00',terms:['I understand how frustrating this situation must be for you. Please know that I\\'m here to support you through every step, and your concern is being treated as a priority','I understand this situation is inconvenient for you. Rest assured, we\\'re committed to resolving it, and it\\'s receiving our full attention right now','I understand how inconvenient this is, and I want to assure you that we\\'re actively working on it. Your case is a priority, and I\\'ll do my best to find the right resolution','I understand how stressful this situation must be for you. I\\'m here to help in any way I can, and your concern is being handled with urgency','Thank you for your patience. I\\'m sorry for the trouble this has caused, and I want you to know I\\'m actively working on your case as a priority','I understand this situation is inconvenient for you. Please know I\\'m here to make this better, and I\\'m prioritising your case until it\\'s resolved','I know this must be frustrating, and I want to assure you that I\\'m focused on your concern. It\\'s being handled as a priority right now','I can imagine how worrying this feels. Please rest assured, we\\'re prioritising your case and doing our best to reach a resolution quickly','I understand how important this is for you, and I\\'m here to support you. Your case will be reviewed carefully and without delay','I know this isn\\'t the experience you expected, and I\\'m committed to addressing it for you. Your concern is being treated with urgency','Thank you for your time so far, I understand that this may be stressful and finding a resolution can take some time. We want you to know that your experience and feedback are so important to us','We appreciate the time you\\'ve spent with us so far. I recognize that this may be a challenging situation, and finding a resolution might take a little while. Rest assured, your feedback is essential to us, and we\\'re dedicated to improving your experience','Thank you for your patience throughout this process. I understand that this situation may be stressful, and resolving it could take some time. Please know that your experience and feedback are incredibly valuable to us, and we\\'re committed to making things right for you','I truly appreciate the time and understanding you\\'ve shown so far. I know this may feel stressful, but please be assured that your concern has our full attention. Resolving it might take a little longer, but your experience matters to us, and we\\'re dedicated to bringing this to a fair conclusion']},{label:'(AP Specific) de-escalation',color:'#FF8C00',terms:['must be for you. Please know that I will immediately']},{label:'(EE Specific) de-escalation',color:'#FF8C00',terms:['I understand how frustrating this situation must be for you. Please know that I\\'m here to provide you with the best possible support. We are currently']},{label:'[R&B] For completed Chargeback cases only',color:'#FF8C00',terms:['I understand that you were counting on the chargeback resolution. I can assure you that the decision was taken after careful considerations. I am still here to help answer any questions that you may have.','I can assure you that these decisions are taken very carefully after analysing each case based on various criteria. In this instance, the outcome was not favourable. However, I am still available to answer any other questions that you may have','These decisions are made carefully, taking into account multiple factors for each case. In this instance, the outcome was not in your favour, but I’m here to help with any other questions you have.','I want you to know these decisions are considered with care and based on several criteria. While this result may not be what you hoped for, I can address any other concerns you’d like to discuss.','Decisions like these involve a thorough review of various factors. Although this outcome isn’t the one you wanted, I’m here to clarify any part of it for you.','Please know that these decisions are taken after assessing multiple aspects of each case. While I understand this is disappointing, I’m available to provide further information if needed.','We take a number of elements into account when making these decisions. I understand this may not be the outcome you were expecting, and I’m here to address any other queries you might have.','These decisions follow a careful evaluation process. While the result may not be favourable in this instance, I’m happy to answer any further questions you may have.','I understand this is not the result you were hoping for. Decisions like these are made after careful consideration, and I remain available for any clarifications.','The outcome here was reached after reviewing your case alongside various criteria. I’m sorry this isn’t the decision you wanted, and I’m here to guide you through any next steps.','I understand this decision may feel disappointing. It was made after considering several factors, and I’m available to discuss any part of it with you further.']},{label:'Country-Specific A-text',color:'#FF69B4',terms:['Buscando uma resolução amigável e eficiente, procuramos tratar todas as divergências internamente, com o objetivo de encontrar a melhor solução possível para o seu caso. Nossa equipe de Ouvidoria entrará em contato por e-mail assim que a análise for concluída, informando a decisão adotada pela Revolut. Ressaltamos que esse processo poderá levar até 10 dias úteis','Przykro mi słyszeć, że jesteś niezadowolony z naszych usług. Cenimy Twoją opinię i jeśli świadczymy Ci usługi na terytorium Polski, oferujemy cztery opcje złożenia reklamacji: Wypełnij formularz dostępny tutaj- Revolut Forms Napisz do nas e-mail formalcomplaints@revolut.com Złóż reklamację telefonicznie pod numerem telefonu +48 12 881 17 42, numer ten jest dostępny od poniedziałku do piątku w godzinach od 9.00-21.00 czasu środkowoeuropejskiego Wyślij reklamację na adres: Konstitucijos ave. 21B, Vilnius, 08105, Republika Litewska Staramy się rozwiązywać wszelkie spory, aby jak najszybciej osiągnąć polubowne solução. Nasze ramy czasowe rozwiązywania reklamacji klientów são ustalane zgodnie z wymogami regulacyjnych. Więcej informacji można znaleźć na stronie internetowej','I\\'m sorry to hear you\\'re dissatisfied with our service. We value your feedback, and if we provide services to you in Poland, we offer four complaint options','formalcomplaints@revolut.com']},{label:'Vulnerability Signal',color:'#FFD700',terms:['mental health','depression','anxiety','bipolar','PTSD','suicidal','suicide','disabled','disability','wheelchair','cancer','terminally ill','stroke','deaf','blind','hearing loss','visual impairment','autism','autistic','ADHD','dyslexia','dyscalculia','dementia','alzheimer','cannot read','cannot write','illiterate','don\\'t understand English','struggle with tech','starving','cannot eat','no food','eat','hungry','bankrupt','bankruptcy','eviction','evicted','homeless','no income','unemployed','cannot afford','no money left','financial difficulty','financial difficulties','gambling','gambler','addict','addiction','rehab','scammed','fraud victim','stolen money','passed away','died','death of my','funeral','widow','bereavement','carer','taking care of my','divorce','separated','single mother','single father','domestic abuse','domestic violence','recovering from abuse','shelter','restraining order','my bills','behind on bills','in debt','rent','mortgage','betting','sick','in hospital','surgery','frail','chronic','diabetes','MS','speech problems','communication difficulty','hard for me to understand','can\\'t do maths','not tech savvy','dealing with a loss','made redundant','overwhelmed','can\\'t cope','isolated','robbed','mugged','partner controls','not safe','harassed','asylum seeker','refugee','in prison','in custody','forced to do this','trafficked','hurt myself','learning difficulty','learning disability','low literacy','digital skills','low income','victims of fraud','victims of theft','loss of job','emotional distress','no support','coercive control','struggle','I\\'m without money','food','emergency expense','limited vision','bill','bills','feed']},{label:'Probing question',color:'#00FF7F',terms:['Thank you for sharing that with me, I know it\\'s not always easy to discuss. I want to make sure we sort out whatever it is that’s concerning you the most today. What is the most critical thing you want to resolve right now, so that you can feel better by the time we end our conversation?','I appreciate you opening up and sharing those details, and I want you to know I’m here to help you navigate this. What’s the biggest challenge you face when trying to use your account or our services right now? In other words, what do you find the most difficult about using Revolut? Let\\'s start by figuring out how to make that easier for you','Thank you for trusting me with this information. I know that when we experience big life changes, it can really disrupt how we manage our money. How is this situation affecting your day-to-day routine, and is there a specific way you want us to help you now that this situation has arisen?','I really appreciate you giving me this background information. Everything you share is completely secure and confidential. Before we move on to solutions, is there anything else I should know to support you better']},{label:'Agent Probing Risk',color:'#FFFACD',terms:['How can I help you','how can I help you','Could you please share the specific issues you\\'re experiencing','How may I assist you today','What can I do for you today','How can I be of help','Is there anything else I can help you with','What seems to be the problem','What is the issue','Can you tell me what happened','What brings you here today','Please describe your issue in detail','Could you please explain what you need help with']},{label:'Consent',color:'#00BFFF',terms:['Thank you for sharing this information with us. We want you to feel comfortable doing so and we\\'re always here to help. So you don\\'t have to explain all of this again if you reach out to us in the future, with your consent, I\\'d like to make a quick note of your situation on our internal system. We\\'ll use this to tailor the support we provide you in line with your needs and also to ensure that we only offer products to you where it would be suitable to do so. I\\'ll only do this if it\\'s okay with you, and you can ask us to delete that information at any time by contacting the customer support via the app. Is it okay if I add the details of your situation to your file?','I can only imagine how much this has affected your life. Thank you for sharing this with us. Would it be okay if I made a note of your circumstances in our internal system with your consent? We\\'ll use this to tailor the support we provide you in line with your needs and also to ensure that we only offer products to you where it would be suitable to do so. This will help us give you the right help, now and in the future. You can request us to delete this information at any time after it\\'s been added by contacting the customer support via the app.','I really appreciate you sharing this information, I know it must not have been easy. The details you\\'ve shared will really help me give you the best possible support. To make sure you don\\'t need to explain them every time you reach out to us for support, would you mind if I made a note of your situation on your file with your consent? We\\'ll also use the information to ensure we only offer products to you where it would be suitable to do so you can ask us to delete this information at any time by contacting the customer support via the app.','Thank you for sharing this information with us. We want you to feel comfortable doing so and we\\'re always here to help. So you don’t have to explain all of this again if you reach out to us in the future, with your consent, I\\'d like to make a quick note of your situation on our internal system. We’ll use this to tailor the support we provide you in line with your needs and also to ensure that we only offer products to you where it would be suitable to do so. I’ll only do this if it’s okay with you, and you can ask us to delete that information at any time by contacting the customer support via the app. Is it okay if I add the details of your situation to your file']},{label:'Regulatory / Trigger',color:'#FF0000',terms:['FCA','Ombudsman','legal action','court claim','deadlock letter','regulator','sue','prosecute','police','lawyer','solicitor','Bank of Lithuania','I want to complain','I want to submit a complaint','How can I complain?','Please turn this chat into a complaint','lodge a complaint','report Revolut','Online Safety Act','OSA','I was sent harmful content by another user','my account was restricted unfairly for something I said','I want to report child exploitation material','CSEA','child abuse','frustrated','frustrating','disappointed','disappointing','unacceptable','ridiculous','waste of time','worst service','worst bank','terrible support','horrible service','social media','Trustpilot','Reddit','speak to manager','close my account','closing my account','leaving Revolut','compensation','costing me money','fed up','sick and tired','disgusted','appalled','annoyed','annoying','furious','outraged','useless','unhelpful','joke','scam','scammers','unprofessional','unacceptable service','sick of this','ruined my','nightmare','complaint','dissatisfied','your fault','unfair','supervisor','manager']},{label:'AI Dash',color:'#FF0000',terms:['—']}];const QA_GUIDE={'CX PRE-INVESTIGATION':[{tag:'#query_missing',desc:'To be used for scenarios where the user\\'s query or issue was left completely unaddressed.'},{tag:'#summarisation_missed',desc:'Retail Chats: Used when an agent fails to review/consider information in Chat Summary or previous interactions, resulting in redundant questions or ignored context.'},{tag:'#duplicate_message',desc:'DO NOT repeat same A-text twice or send exact same message in chat twice. Applicable only to messages sent by the agent under review.'},{tag:'#valuable_first_message',desc:'To be used when agent\\'s initial message fails to deliver immediate value by ignoring basic pre-investigation steps or failing to tailor the response.'}],'KG WRONG ESCALATION':[{tag:'#queue_escalation',desc:'Agent fails to correctly escalate a chat that requires a specialized team, or doing so unnecessarily/incorrectly.'},{tag:'#jira_escalation',desc:'Mismanagement of JIRA or Dante tickets (missing tickets, unnecessary creation, incorrect data, or policy-breaking comments).'},{tag:'#bug_jira_escalation',desc:'Mistakes related to BUGs Jira tickets (failing to raise, raising unnecessarily, missing info, incorrect linking, improper comments).'},{tag:'#ticketor_escalation',desc:'Ticketor is raised incorrectly, unnecessarily, or not raised when necessary.'},{tag:'#outage_escalation',desc:'Failing to properly escalate an issue according to outage guidelines, including process adherence failures and mishandling silent escalations.'},{tag:'#email_forwarding',desc:'Mishandling ticket forwarding (failing to forward, forwarding unnecessarily, or routing to incorrect team).'}],'RI VC':[{tag:'#vc_recognition',desc:'Agent misses signs of vulnerability, incorrectly identifies a non-vulnerable customer as vulnerable, or fails to prioritize VC flow when required.'},{tag:'#uk_vc_recording',desc:'UK users only: Fails to inform customer about recording data, unnecessarily asks for consent, or alters mandatory recording A-texts.'},{tag:'#vc_recording',desc:'Fails to ask consent, unnecessarily asks, fails to inform about recording data, or alters mandatory consent A-texts.'},{tag:'#vc_tags',desc:'Failures regarding VC tagging in BO/Chat (Extra Care, Vulnerable customer, Phone Support - NOT eligible, or VC data deletion flow).'},{tag:'#vc_vulnerabilities_and_notes',desc:'Mistakes adding confirmed vulnerabilities without consent, missing/incorrect VC notes, or failing to delete upon objection.'},{tag:'#vc_probing_questions',desc:'Fails to ask mandatory probing questions, unauthorized A-text modifications, or asking when they should be skipped.'},{tag:'#vc_outcomes_recorded',desc:'Missed, incorrect, or incomplete recording of vulnerability-driven outcomes in BO Outcomes tab.'},{tag:'#vc_phone_call_offer',desc:'Exclusive to VC flows where phone call was missed (when required) or offered unnecessarily.'},{tag:'#vc_suicidal_abused',desc:'Failures in following guidelines on the Suicidal or Abused Customers policy flow.'},{tag:'#vc_comms',desc:'Communication/soft-skill failures related to VC (assuming vulnerability, accusatory language, or commanding instead of guiding).'}],'RI SECURITY PROCEDURES':[{tag:'#abusive_user',desc:'Agent fails to handle an abusive customer according to policy.'},{tag:'#call_recording',desc:'Fails to inform customer that call will be recorded or fails to obtain consent.'},{tag:'#confidential_mark',desc:'Sensitive info/PII not marked as Confidential (QC must mark message in tool & leave chat note).'},{tag:'#delete_info',desc:'Sensitive info in chat and agent failed to request deletion (raise Delete Info crosscheck).'},{tag:'#forbidden_words',desc:'Agent uses banned words/internal terms (may constitute Tipping Off).'},{tag:'#missed_verification_answers',desc:'Security verification approved with incorrect answers.'},{tag:'#missed_verification_questions',desc:'Security verification missed; security questions not asked.'},{tag:'#phishing',desc:'Fails to identify phishing or execute Phishing Policy steps.'},{tag:'#privacy_concern',desc:'Fails to address or incorrectly addresses customer privacy/DPO concerns.'},{tag:'#risk_incident',desc:'Potential/confirmed risk violations or failing to report risk incident (Requires Risk Team consultation).'},{tag:'#security_education',desc:'Fails to educate user on data security after sensitive info removal.'},{tag:'#sensitive_info',desc:'Requesting unallowed screenshots or failing to use partial credentials (masking) for PII.'},{tag:'#tipping_off',desc:'Mistakes related to tipping off as per policy.'},{tag:'#financial_advice',desc:'Providing prohibited financial/stock/crypto/commodity/tax advice (Triggers Remediation & Risk Incident).'},{tag:'#reg_e',desc:'US Expansions: Failing to follow Regulation E protocols correctly.'}]};const POLICY_QUESTIONS=[{text:'Has agent followed correct CX Pre-Investigation Process?',links:[{label:'Troubleshooting Policy',url:'https://revolut.atlassian.net/wiki/spaces/COM/pages/3219818334/R+Investigation+Troubleshooting+and+Delivering+Solutions'},{label:'Troubleshooter Policy',url:'https://revolut.atlassian.net/wiki/spaces/COM/pages/3616112826/R+Chat+Received+Troubleshooter?xpis=eyJicmlkZ2UiOiJzZWFyY2hQYWdlIiwiaWQiOiIxNzg5MDQyNDE4Mzk2Iiwic291cmNlIjoiY29uZmx1ZW5jZSJ9'}]},{text:'Has agent followed correct knowledge gap escalation process?',links:[{label:'Support Queues Policy',url:'https://revolut.atlassian.net/wiki/spaces/COM/pages/4280157538/R+Support+Queues+Tables'}]},{text:'Has Agent followed correct procedure for vulnerable customers?',links:[{label:'Support Vulnerable Customers Policy',url:'https://revolut.atlassian.net/wiki/spaces/COM/pages/6014272662/Support+Vulnerable+Customers+Policy'}]},{text:'Has Agent followed correct security procedures?',links:[{label:'Confidential Content Policy',url:'https://revolut.atlassian.net/wiki/spaces/COM/pages/6248118877/Support+Sharing+Confidential+Content+PII+Encryption#4.3-Chat:-Marking-messages-as-Confidential'}]}];window.__argusActive=window.__argusActive!==undefined?window.__argusActive:true;window.__argusTimerPaused=window.__argusTimerPaused||false;window.__argusElapsedBeforePause=window.__argusElapsedBeforePause||0;window.__argusLastStartTime=window.__argusLastStartTime||Date.now();if(!document.getElementById('argus-combined-style')){const style=document.createElement('style');style.id='argus-combined-style';style.innerHTML=\`@keyframes argusNeonIn{0%{opacity:0;transform:translate(-50%,-30px) scale(0.85);filter:blur(5px);}100%{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0);}}.ai-dash-highlight{font-size:1.1em !important;font-weight:bold !important;padding:3px 6px !important;border-radius:4px !important;display:inline-block !important;position:relative !important;margin-top:18px !important;line-height:1.3 !important;}.ai-dash-badge{position:absolute !important;top:-16px !important;left:0 !important;background:#000000 !important;font-size:9px !important;font-weight:800 !important;padding:1px 5px !important;border-radius:3px !important;white-space:nowrap !important;line-height:1 !important;z-index:999 !important;}.qa-info-icon{display:inline-flex !important;align-items:center !important;justify-content:center !important;width:16px !important;height:16px !important;background:#00BFFF !important;color:#FFF !important;border-radius:50% !important;font-size:10px !important;font-weight:bold !important;margin-left:6px !important;cursor:pointer !important;position:relative !important;user-select:none !important;vertical-align:middle !important;}.qa-tooltip{display:none;width:290px;background-color:#1E1E1E;color:#FFF;text-align:left;border-radius:6px;padding:10px;position:absolute;z-index:999999;top:22px;left:0;box-shadow:0px 4px 12px rgba(0,0,0,0.5);border:1px solid #333;font-family:Arial,sans-serif;font-size:11px;white-space:normal !important;cursor:default !important;}.qa-tooltip.qa-active{display:block !important;}.qa-tag-card{background:#2D2D2D;margin:5px 0;padding:6px;border-radius:4px;border-left:3px solid #00FF7F;cursor:pointer;transition:background 0.2s;}.qa-tag-card:hover{background:#3D3D3D;}.qa-tag-name{color:#00FF7F;font-weight:bold;font-size:11px;display:block;margin-bottom:3px;}.qa-tag-desc{color:#DDD;font-size:10px;line-height:1.3;display:block;}.qa-search-input{width:93%;padding:5px 8px;margin-bottom:8px;background:#111;border:1px solid #00BFFF;color:#FFF;border-radius:4px;font-size:11px;outline:none;}.policy-dropdown-btn{position:relative !important;display:inline-flex !important;align-items:center !important;margin-left:8px !important;padding:2px 8px !important;background:#1E3A8A !important;color:#60A5FA !important;border:1px solid #3B82F6 !important;border-radius:4px !important;font-size:10px !important;font-weight:bold !important;cursor:pointer !important;user-select:none !important;vertical-align:middle !important;}.policy-dropdown-btn:hover{background:#2563EB !important;color:#FFF !important;}.policy-menu{display:none;position:absolute;top:22px;left:0;background:#1E1E1E;border:1px solid #3B82F6;border-radius:6px;padding:6px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,0.5);min-width:180px;white-space:nowrap !important;}.policy-menu.qa-active{display:block !important;}.policy-menu-item{display:block;padding:6px 10px;color:#60A5FA;text-decoration:none !important;font-size:11px;font-weight:normal;border-radius:4px;transition:background 0.2s;text-align:left;}.policy-menu-item:hover{background:#2563EB;color:#FFF !important;}#argus-top-bar{position:fixed;top:12px;left:12px;z-index:9999999;display:flex;align-items:center;gap:8px;background:#1E1E1E;border:1px solid #00FF7F;border-radius:20px;padding:4px 12px;box-shadow:0 4px 10px rgba(0,0,0,0.5);font-family:Arial,sans-serif;}#argus-toggle-btn{background:none;border:none;color:#00FF7F;font-size:12px;font-weight:bold;cursor:pointer;padding:0;user-select:none;}#argus-toggle-btn.off{color:#FF4500;}.argus-bar-divider{width:1px;height:14px;background:#444;}#argus-timer-display{color:#38BDF8;font-size:12px;font-weight:bold;font-family:monospace;}#argus-timer-pause,#argus-timer-reset{background:none;border:none;font-size:11px;cursor:pointer;padding:0;}#argus-timer-pause:hover,#argus-timer-reset:hover{filter:brightness(1.3);}.argus-toast-notify{position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:99999999;background:#0A0F1D;color:#00FF7F;border:2px solid #00FF7F;border-radius:50px;padding:12px 28px;font-family:'Segoe UI',system-ui,sans-serif;font-size:13.5px;font-weight:700;box-shadow:0 0 25px rgba(0,255,127,0.4),inset 0 0 10px rgba(0,255,127,0.2);animation:argusNeonIn 0.5s cubic-bezier(0.19,1,0.22,1) forwards;transition:all 0.4s ease;text-align:center;white-space:nowrap;pointer-events:none;letter-spacing:0.3px;}\`;document.head.appendChild(style);}function showToastNotification(text){const toast=document.createElement('div');toast.className='argus-toast-notify';toast.innerText=text;document.body.appendChild(toast);setTimeout(()=>{toast.style.opacity='0';toast.style.transform='translate(-50%,-20px) scale(0.9)';setTimeout(()=>toast.remove(),400);},3000);}function createTopBar(){if(document.getElementById('argus-top-bar'))return;const bar=document.createElement('div');bar.id='argus-top-bar';bar.innerHTML=\`<button id="argus-toggle-btn" class="\${window.__argusActive?'':'off'}">\${window.__argusActive?'👁️ Argus: ON':'👁️ Argus: OFF'}</button><div class="argus-bar-divider"></div><span id="argus-timer-display">⏱️ 00:00</span><button id="argus-timer-pause" title="Pause/Play Timer">\${window.__argusTimerPaused?'▶️':'⏸️'}</button><button id="argus-timer-reset" title="Reset Timer">🔄</button>\`;const toggleBtn=bar.querySelector('#argus-toggle-btn');toggleBtn.onclick=function(e){e.stopPropagation();window.__argusActive=!window.__argusActive;toggleBtn.innerHTML=window.__argusActive?'👁️ Argus: ON':'👁️ Argus: OFF';toggleBtn.classList.toggle('off',!window.__argusActive);if(!window.__argusActive){document.querySelectorAll('.ai-dash-highlight').forEach(el=>{const parent=el.parentNode;if(parent){parent.replaceChild(document.createTextNode(el.innerText.replace(/^[A-Za-z0-9\\s/:\\-—]+(?=[I|B|P|T|W|f|S|e|m|d|a|k|r|c|g|s|o|n|l|h|v|F|O|C|A])/,'')),el);}});}};const pauseBtn=bar.querySelector('#argus-timer-pause');pauseBtn.onclick=function(e){e.stopPropagation();if(!window.__argusTimerPaused){window.__argusElapsedBeforePause+=(Date.now()-window.__argusLastStartTime);window.__argusTimerPaused=true;pauseBtn.innerText='▶️';}else{window.__argusLastStartTime=Date.now();window.__argusTimerPaused=false;pauseBtn.innerText='⏸️';}};bar.querySelector('#argus-timer-reset').onclick=function(e){e.stopPropagation();window.__argusElapsedBeforePause=0;window.__argusLastStartTime=Date.now();updateTimer();};document.body.appendChild(bar);}function updateTimer(){const display=document.getElementById('argus-timer-display');if(!display)return;let totalMs=window.__argusElapsedBeforePause;if(!window.__argusTimerPaused){totalMs+=(Date.now()-window.__argusLastStartTime);}const elapsedSeconds=Math.floor(totalMs/1000);const hours=Math.floor(elapsedSeconds/3600);const mins=Math.floor((elapsedSeconds%3600)/60);const secs=elapsedSeconds%60;const formattedMins=mins.toString().padStart(2,'0');const formattedSecs=secs.toString().padStart(2,'0');if(hours>0){const formattedHours=hours.toString().padStart(2,'0');display.innerText=\`⏱️ \${formattedHours}:\${formattedMins}:\${formattedSecs}\`;}else{display.innerText=\`⏱️ \${formattedMins}:\${formattedSecs}\`;}}function runArgusHighlight(){if(!window.__argusActive)return;STEPS.forEach(step=>{const escaped=step.terms.map(s=>s.replace(/[-/\\\\^$*+?.()|[\\]{}]/g,'\\\\$&').replace(/['’]/g,"['’]"));if(!escaped.length)return;const regex=step.terms.includes('—')?new RegExp('('+escaped.join('|')+')','gi'):new RegExp('(?<=^|\\\\W)('+escaped.join('|')+')(?=\\\\W|$)','gi');function walk(node){if(node.nodeType===Node.TEXT_NODE){const parent=node.parentNode;if(!parent||['SCRIPT','STYLE','TEXTAREA','INPUT','NOSCRIPT'].includes(parent.tagName))return;if(parent.classList&&parent.classList.contains('ai-dash-highlight'))return;if(parent.closest&&parent.closest('.ai-dash-highlight'))return;if(regex.test(node.nodeValue)){const span=document.createElement('span');span.innerHTML=node.nodeValue.replace(regex,'<span class="ai-dash-highlight" style="background-color: '+step.color+' !important; color: #000000 !important;"><span class="ai-dash-badge" style="color: '+step.color+' !important; border: 1px solid '+step.color+' !important;">'+step.label+'</span>$1</span>');parent.replaceChild(span,node);}}else{for(let child of Array.from(node.childNodes)){walk(child);}}}walk(document.body);});}function injectPolicyLinks(){POLICY_QUESTIONS.forEach(pq=>{const cleanClass='qa-policy-single-'+pq.text.replace(/[^a-zA-Z0-9]/g,'-');if(document.querySelector('.'+cleanClass))return;const elements=Array.from(document.querySelectorAll('div, span, label, p, h1, h2, h3, h4'));for(let el of elements){if(el.children.length>0)continue;const txt=el.innerText?el.innerText.trim():'';if(txt===pq.text){el.classList.add(cleanClass);const btn=document.createElement('span');btn.className='policy-dropdown-btn';btn.innerHTML='🔗 Policy Links';const menu=document.createElement('div');menu.className='policy-menu';pq.links.forEach(l=>{const a=document.createElement('a');a.className='policy-menu-item';a.href=l.url;a.target='_blank';a.innerText='📄 '+l.label;a.onclick=function(e){e.stopPropagation();menu.classList.remove('qa-active');};menu.appendChild(a);});btn.onclick=function(e){e.stopPropagation();document.querySelectorAll('.policy-menu, .qa-tooltip').forEach(m=>{if(m!==menu)m.classList.remove('qa-active');});menu.classList.toggle('qa-active');};btn.appendChild(menu);el.appendChild(btn);break;}}});}function runQAInfo(){Object.keys(QA_GUIDE).forEach(sectionTitle=>{if(document.querySelector('.qa-has-icon-'+sectionTitle.replace(/\\s+/g,'-')))return;const elements=Array.from(document.querySelectorAll('div, span, label, p'));for(let el of elements){if(el.children.length>0)continue;const txt=el.innerText?el.innerText.trim():'';if(txt===sectionTitle){el.classList.add('qa-has-icon-'+sectionTitle.replace(/\\s+/g,'-'));const icon=document.createElement('span');icon.className='qa-info-icon';icon.innerText='i';const tooltip=document.createElement('div');tooltip.className='qa-tooltip';let cardsHTML='';QA_GUIDE[sectionTitle].forEach(item=>{cardsHTML+=\`<div class="qa-tag-card" data-tag="\${item.tag.toLowerCase()}" data-desc="\${item.desc.toLowerCase()}"><span class="qa-tag-name">\${item.tag}</span><span class="qa-tag-desc">\${item.desc}</span></div>\`;});tooltip.innerHTML=\`<b style="color:#00BFFF;">\${sectionTitle} Guide:</b><br><input type="text" class="qa-search-input" placeholder="🔍 Search tag..." /><div class="qa-cards-container">\${cardsHTML}</div>\`;const searchInput=tooltip.querySelector('.qa-search-input');searchInput.onclick=function(e){e.stopPropagation();};searchInput.oninput=function(e){const q=e.target.value.toLowerCase().trim();tooltip.querySelectorAll('.qa-tag-card').forEach(card=>{const tag=card.getAttribute('data-tag');const desc=card.getAttribute('data-desc');if(tag.includes(q)||desc.includes(q)){card.style.display='block';}else{card.style.display='none';}});};tooltip.querySelectorAll('.qa-tag-card').forEach((card,idx)=>{card.onclick=function(e){e.stopPropagation();const item=QA_GUIDE[sectionTitle][idx];const textToCopy=item.tag+' '+item.desc;navigator.clipboard.writeText(textToCopy);tooltip.classList.remove('qa-active');};});icon.onclick=function(e){e.stopPropagation();document.querySelectorAll('.policy-menu, .qa-tooltip').forEach(t=>{if(t!==tooltip)t.classList.remove('qa-active');});tooltip.classList.toggle('qa-active');if(tooltip.classList.contains('qa-active')){setTimeout(()=>searchInput.focus(),100);}};icon.appendChild(tooltip);el.appendChild(icon);break;}}});}function masterLoop(){createTopBar();updateTimer();runArgusHighlight();injectPolicyLinks();runQAInfo();}document.addEventListener('click',function(){document.querySelectorAll('.policy-menu, .qa-tooltip').forEach(t=>t.classList.remove('qa-active'));});masterLoop();if(!window.__argusMasterInterval){window.__argusMasterInterval=setInterval(masterLoop,1000);showToastNotification("Argus has opened all 100 eyes... Nothing escapes the review! 👁️🚀");}})();`;
+
+    var phoneCode = `(function(){const e=document.getElementById("argus-chat-overlay");e&&e.remove();const t=document.createElement("div");t.id="argus-chat-overlay",Object.assign(t.style,{position:"fixed",top:"20px",left:"20px",width:"480px",height:"85vh",minWidth:"300px",minHeight:"200px",backgroundColor:"#0f172a",color:"#f8fafc",zIndex:"9999999",borderRadius:"12px",boxShadow:"0 20px 25px -5px rgba(0,0,0,0.5)",display:"flex",flexDirection:"column",fontFamily:"system-ui, sans-serif",overflow:"hidden",resize:"both",border:"1px solid #334155"});const n=document.createElement("div");Object.assign(n.style,{padding:"12px 16px",background:"#1e293b",borderBottom:"1px solid #334155",display:"flex",justifyContent:"space-between",alignItems:"center",fontWeight:"600",cursor:"move",userSelect:"none"}),n.innerHTML="<span>Argus👁️ - Phone📞</span>";const o=document.createElement("button");o.innerText="✕",Object.assign(o.style,{background:"none",border:"none",color:"#94a3b8",fontSize:"18px",cursor:"pointer"}),o.onclick=()=>t.remove(),n.appendChild(o),t.appendChild(n);let l=!1,r=0,c=0;n.addEventListener("mousedown",e=>{"BUTTON"===e.target.tagName||(l=!0,r=e.clientX-t.offsetLeft,c=e.clientY-t.offsetTop)}),document.addEventListener("mousemove",e=>{l&&(t.style.left=e.clientX-r+"px",t.style.top=e.clientY-c+"px")}),document.addEventListener("mouseup",()=>{l=!1});const a=document.createElement("div");Object.assign(a.style,{flex:"1",padding:"16px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"10px"}),t.appendChild(a);const s=document.body.innerText||"",i=s.split(/(?=speaker_0[01]:)/gi),d=[],m=e=>e.toLowerCase().replace(/[^\\w\\s]/g,"").replace(/\\s+/g," ").trim();let p="",u="",g=s.includes("Escalated to")||s.includes("Assigned to")?"🎧 AGENT (01)":"🤖 VOICE BOT (01)";i.forEach(e=>{const t=e.match(/^(speaker_0[01]):\\s*([\\s\\S]+)/i);if(!t)return;const n=t[1].toLowerCase();let o=t[2].trim();const l=["show options","customer authenticated","escalated to","assigned to","call successfully completed","in-app call ended","download recording"];for(const e of l){const t=o.toLowerCase().indexOf(e);t!==-1&&(o=o.slice(0,t).trim())}const k=m(o);if(!k||k.length<2)return;if(p&&u==="speaker_00"&&"speaker_01"===n){const e=p.length>k.length?p:k,t=p.length>k.length?k:p;if(e.includes(t)||(e.slice(-20)&&t.startsWith(e.slice(-20))))return}p=k,u=n;let y="speaker_00"===n,E=y?"👤 CUSTOMER (00)":g;d.push({roleLabel:E,text:o,isUser:y})}),0===d.length?a.innerHTML='<div style="text-align: center; color: #94a3b8; margin-top: 20px;">⚠️ No call transcript found on this page.</div>':d.forEach(e=>{const t=document.createElement("div");Object.assign(t.style,{maxWidth:"85%",padding:"10px 14px",borderRadius:"10px",fontSize:"13px",alignSelf:e.isUser?"flex-start":"flex-end",backgroundColor:e.isUser?"#1e293b":"#1e1b4b",borderLeft:e.isUser?"3px solid #38bdf8":"3px solid #eab308",color:"#f1f5f9"}),t.innerHTML=\`<div style="font-size:11px; font-weight:bold; color:\${e.isUser?"#38bdf8":"#eab308"}; margin-bottom:4px;">\${e.roleLabel}</div><div>\${e.text}</div>\`,a.appendChild(t)}),document.body.appendChild(t)})();`;
+
+    /* 3. Helper to attach Bookmarklets */
+    function setupBookmarklet(btnId, code) {
+      const btn = document.getElementById(btnId);
+      btn.setAttribute("href", "javascript:" + encodeURI(code));
+      btn.onclick = function(e) {
+        try { eval(code); } catch(err) { console.error(err); }
+        e.preventDefault();
+      };
+    }
+
+    setupBookmarklet("drag-lens", lensCode);
+    setupBookmarklet("drag-argus", argusCode);
+    setupBookmarklet("drag-watcher", watcherCode);
+    setupBookmarklet("drag-phone", phoneCode);
+  </script>
+</body>
+</html>
