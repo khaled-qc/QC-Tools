@@ -223,6 +223,26 @@
       0% { transform: translateX(100vw); }
       100% { transform: translateX(-100%); }
     }
+    .eye-blink {
+      display: inline-block;
+      animation: eyeBlinkAnim 3.5s infinite ease-in-out !important;
+      transform-origin: center center;
+    }
+
+    @keyframes eyeBlinkAnim {
+      0%, 85%, 100% {
+        transform: translateY(0) scaleY(1);
+      }
+      40% {
+        transform: translateY(-6px) scaleY(1);
+      }
+      90% {
+        transform: translateY(0) scaleY(0.05);
+      }
+      94% {
+        transform: translateY(0) scaleY(1);
+      }
+    }
   </style>
 </head>
 <body>
@@ -258,7 +278,7 @@
 
       <!-- Right Portal: Argus Suite (argus.html) -->
       <a class="portal-card" href="argus.html">
-        <div class="portal-icon">👁️</div>
+        <div class="portal-icon eye-blink">👁️</div>
         <h2 class="portal-title">Argus Tools</h2>
         <p class="portal-desc">Access Argus 100-eye inspector, Lens PII scanner, Watcher tracker, and Phone audio parser.</p>
         <span class="portal-btn">Launch Argus Tools ➔</span>
