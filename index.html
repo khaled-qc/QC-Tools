@@ -242,6 +242,31 @@
       94% {
         transform: translateY(0) scaleY(1);
       }
+      
+    }
+ .bot-tilt {
+      display: inline-block;
+      animation: botPingAnim 4s infinite ease-in-out !important;
+      transform-origin: bottom center;
+    }
+
+    @keyframes botPingAnim {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.4));
+      }
+      35% {
+        transform: translateY(-6px) rotate(0deg);
+        filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.5));
+      }
+      45%, 65% {
+        transform: translateY(-4px) rotate(12deg);
+        filter: drop-shadow(0 0 16px #38bdf8) brightness(1.25);
+      }
+      75% {
+        transform: translateY(-2px) rotate(0deg);
+        filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.4));
+      }
     }
   </style>
 </head>
@@ -270,7 +295,7 @@
 
       <!-- Left Portal: QC Automation Hub (Bots.html) -->
       <a class="portal-card" href="Bots.html">
-        <div class="portal-icon">🤖</div>
+        <div class="portal-icon bot-tilt">🤖</div>
         <h2 class="portal-title">QC Bots</h2>
         <p class="portal-desc">Access Complaints Flow, Price Plan Downgrades, and Email Customer Verification bots.</p>
         <span class="portal-btn">Launch QC Bots ➔</span>
