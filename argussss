@@ -1,1 +1,766 @@
-javascript:(function(){if(window.__argusEscInit){if(window.__argusEscRun)window.__argusEscRun();return;}window.__argusEscInit=1;const RULES=[{id:'ar_login',name:'Access Recovery (Login / 2FA / Selfie)',v:'Access Recovery',q:'[S] Retail Access Recovery',t:1,kw:['cannot log in','cant log in','locked out','forgot passcode','reset passcode','forgot pin','otp not received','sms code not received','selfie verification','liveness','active liveness','passkey','scrambled passcode','new device login','anonymous user','web app login','2fa'],not:'KYC doc rejection -> KYC | Transfer OTP -> Transfers | Logged-in phone/email change -> Retail Account'},{id:'ar_street',name:'Street Mode / Wealth Protection Checks',v:'Access Recovery',q:'[S] Retail Access Recovery',t:1,kw:['street mode','wealth protection','trusted wi-fi','trusted wifi','withdrawal threshold selfie'],not:'ACM-1001 restriction -> Fraud/AP | Self-serve FAQ -> Do not escalate'},{id:'cp_general',name:'Card Payments (Declines / Pre-Auth / 3DS)',v:'Card Payments',q:'[S] Card Payments',t:1,kw:['card declined','card payment declined','pre-authorisation','pre-authorization','afd','automated fuel','hotel hold','car rental hold','3d secure','3ds','dynamic currency conversion','dcc','offline card','authorised vs settled','authorized vs settled','contactless limit','gambling block','apple pay declined','google pay declined','card payment at hotel','etoro card','binance card'],not:'Unrecognised/Fraud card tx -> Chargeback | Refund > 5 days -> Chargeback'},{id:'cp_refund_wait',name:'Merchant Refund (<= 5 Business Days)',v:'Card Payments',q:'[S] Card Payments',t:1,kw:['pending refund','refund within 5 days','refund less than 5','waiting for refund 2 days','waiting for refund 3 days','reverted refund','dpan refund'],not:'Merchant refund promised > 5 business days ago -> Chargeback'},{id:'cp_sub_psr',name:'Subscription Management / PSR',v:'Card Payments',q:'[S] Card Payments',t:1,kw:['block subscription','unblock merchant','payment stop request','psr','recurring debit','stop recurring'],not:'Cancelled subscription still charged & wants refund -> Chargeback'},{id:'cp_atm',name:'ATM Withdrawal (Limits / Fees / Pending Hold)',v:'Card Payments',q:'[S] Card Payments',t:1,kw:['atm limit','atm fee','atm withdrawal','atm hold','atm pending'],not:'ATM cash not dispensed & funds permanently debited -> Chargeback | BLIK/MBWay ATM -> Transfers'},{id:'cards_delivery',name:'Cards (Order / Delivery / PIN / Activation)',v:'Cards',q:'[S] Card Payments',t:1,kw:['card delivery','undelivered card','order card','replacement card','custom card','activate card','pin reveal','unblock pin','card fee waiver','add to apple pay','add to google pay','disposable card','virtual card','freeze card'],not:'Card declined at POS/ATM -> Card Payments | <18 cards -> Retail Account | Lost/Stolen fraud -> AP/Chargeback'},{id:'topup_card',name:'Top-Ups (Card / Apple Pay / Google Pay / iDEAL)',v:'Top-ups',q:'[S] Card Payments',t:1,kw:['card top-up','card top up','apple pay top','google pay top','ideal top','auto top-up','auto top up','topup_return','top-up return','duplicate top-up','check deposit','cash deposit'],not:'Bank transfer top-up (SEPA/SWIFT/FPS/Open Banking) -> Transfers | PENDING_TM_ASSESSMENT -> AML/Screening'},{id:'chb_fraud',name:'Chargeback: Unrecognised / Fraud Card Tx',v:'Chargeback',q:'[S] Chargeback',t:1,kw:['unrecognised card','unrecognized card','fraudulent card','did not authorize card','didn\'t make this card payment','stolen card details','unauthorised card','unauthorized card','card fraud'],not:'Account Takeover (ATO) / stolen device -> Account Protection | Locked account due to CHB -> Do NOT escalate to Chargeback'},{id:'chb_dispute',name:'Chargeback: Merchant Dispute / Refund > 5d / ATM Cash',v:'Chargeback',q:'[S] Chargeback',t:1,kw:['chargeback','goods not received','services not received','not as described','defective item','charged twice','duplicate charge','overcharged','cancelled subscription still charged','merchant refund over 5','refund > 5','atm cash not dispensed','provisional credit','pay later dispute'],not:'Pending refund <= 5 days -> Card Payments | P2P / Bank transfer recall -> Transfers | Stays Pay Now -> Stays'},{id:'ic_upl',name:'Credit: Unsecured Personal Loan (UPL)',v:'Insurance & Credit',q:'[S] Insurance & Credit Helpers',t:0,kw:['personal loan','upl','loan application','loan repayment','early loan settlement','loan cooling-off','refinancing','refi','loan apr','loan interest'],not:'"Free cash"/VC financial help -> Do NOT escalate | Non-operational market credit -> Do NOT escalate'},{id:'ic_cc_bnpl',name:'Credit Card / Pay Later (BNPL) / Credit Bureau',v:'Insurance & Credit',q:'[S] Insurance & Credit',t:1,kw:['revolut credit card','credit limit increase','credit card statement','stamp duty ireland','pay later','bnpl','split in instalments','bik','ccr','credit register','mortgage lithuania'],not:'Disputing credit card/BNPL merchant purchase -> Chargeback | Soft onboarding credit check -> Do NOT escalate'},{id:'ins_all',name:'Insurance (Travel / Everyday / Car / Pet / Claims)',v:'Insurance & Credit',q:'[S] Insurance & Credit',t:1,kw:['travel insurance','pemc','pre-existing medical','everyday protection','purchase protection','ticket cover','cfar','cancellation for any reason','car insurance','no claims bonus','pet insurance','qover','allianz','cover genius','chubb','insurance claim'],not:'SmartDelay / Airport Lounge -> Retail Product | Flight compensation (AirHelp) -> Retail Product | Failed chargeback -> Chargeback'},{id:'wt_crypto',name:'Crypto (Buy/Sell / TXID / Staking / RevX / Ramp)',v:'Wealth & Trading',q:'[S] Wealth & Trading',t:1,kw:['crypto','bitcoin','ethereum','txid','blockchain','gas fee','crypto staking','apy','delisted token','revolut ramp','revramp','revolut x','revx'],not:'Crypto scam (APP) -> Account Protection | Card declined on Binance/Kraken -> Card Payments | Fiat wire to exchange -> Transfers'},{id:'wt_fx',name:'Forex (Exchange Rates / Weekend Markup / Currency Pockets)',v:'Wealth & Trading',q:'[S] Wealth & Trading',t:1,kw:['exchange rate','fx markup','weekend markup','currency exchange limit','rate adjustment','auto-exchange','target rate','multi-currency pocket'],not:'Scheduled exchange outbound transfer failed -> Transfers | Negative balance without FX -> Retail Account'},{id:'wt_stocks',name:'Stocks / ETFs / Commodities / Savings / FCF / ISA',v:'Wealth & Trading',q:'[S] Wealth & Trading',t:1,kw:['stock','etf','shares','fractional shares','commodities','gold','silver','trading pro','flexible cash funds','fcf','mmf','money market fund','savings vault','savings interest','proxy voting','dividend','t+1','w-8ben','trading statement','acats','isa','robo-advisor'],not:'External broker card purchase -> Card Payments | Non-interest Pockets -> Retail Account'},{id:'wt_cfd',name:'Trading: CFDs / Margin / Leverage (Must be Priority)',v:'Wealth & Trading',q:'[S] Wealth & Trading Priority',t:0,kw:['cfd','cfds','contract for difference','margin trading','leverage','shorting','overnight fee','holding fee','margin call','force liquidation'],not:'CFDs must strictly go to [S] Wealth & Trading Priority regardless of plan'},{id:'tr_in_out',name:'Transfers (SEPA / SWIFT / FPS / ACH / UETR / Recall / P2P)',v:'Transfers',q:'[S] Transfers',t:1,kw:['sepa','swift','faster payments','fps','ach','bacs','chaps','fedwire','iban','bic','sort code','routing number','uetr','gpi','mt103','pacs.008','recall','transfer recall','inbound transfer','outbound transfer','wire transfer','early_credit','early salary','verification of payee','vop','cop','open banking','plaid','peer to peer','p2p','revtag','split bill','payment link','direct debit','external_mandate','push to card','p2c','blik','mbway','mb way','bizum','wero','tikkie'],not:'Card top-up -> Card Payments | PENDING_TM_ASSESSMENT / SOF -> AML/Screening | APP Scam / Fraud -> Account Protection | Pocket-to-pocket -> Retail Product'},{id:'ra_profile',name:'Retail Account (Details / Plan / Downgrade / Statements / Closure)',v:'Retail Account',q:'[S] Retail Account',t:1,kw:['change phone number','change email','change address','tin','tax residency','plan upgrade','plan downgrade','downgrade fee','cooling-off plan','plan fee refund','account statement','confirmation letter','proof of funds letter','close my account','terminate account','account closure','negative balance subscription','joint account','bank mobility','p-account'],not:'Anonymous login -> Access Recovery | Name change / KYC failed -> KYC | MT103 -> Transfers | Active blockers (pending card/transfer/CHB/stocks) -> respective vertical'},{id:'ra_ref',name:'Referrals & Promotional Campaigns',v:'Retail Account',q:'[S] Retail Account Referrals',t:0,kw:['referral','invitee','invited a friend','referral reward','referral bonus','missed deadline','grace period','cashback campaign'],not:'Cross-entity MX/JP referral -> Expansions Cross Entity Referrals'},{id:'rp_general',name:'Retail Product (RevPay / Lounges / RevPoints / Perks / Pro / Bugs)',v:'Retail Product',q:'[S] Retail Product',t:1,kw:['revolut pay','revpay','airport lounge','smartdelay','fast track','flight delay pass','revpoints','air miles','flying blue','avios','nordvpn','classpass','tinder','deliveroo','perks','revolut pro','revolut reader','pos','budgeting','analytics','open banking aggregation','app bug','app crash','pockets','bills pocket','spare change'],not:'Card processing -> Card Payments | Travel Insurance claim -> Insurance & Credit | Savings interest pocket -> Wealth & Trading'},{id:'rp_telco',name:'Retail Product: eSIM / Mobile Plans (Telco)',v:'Retail Product',q:'[S] Retail Product - Telco',t:0,kw:['esim','e-sim','travel data plan','mobile plan','sim activation','roaming','sm-dp+','pac code','number porting','1global'],not:'All Telco/eSIM queries route directly to [S] Retail Product - Telco'},{id:'st_gen',name:'Stays: General Bookings / Cashback / Experiences',v:'Stays',q:'[S] Stays General',t:0,kw:['revolut stays','hotel booking','stays cashback','viator','experiences','pay at property','pay upfront','hotel vat invoice','room quality'],not:'Non-Revolut booking (Booking.com/Airbnb) -> Do NOT escalate | Card declined at hotel -> Card Payments'},{id:'st_mod',name:'Stays: Modifications / Cancellations / Refunds',v:'Stays',q:'[S] Stays Modifications',t:0,kw:['cancel stays','cancel hotel','modify booking','change check-in','change check-out','stays refund','stays cancellation'],not:'Must go to [S] Stays Modifications (Never Phone queues)'},{id:'st_reloc',name:'Stays: Denied Check-In / Urgent Relocation',v:'Stays',q:'[S] Stays Priority',t:0,kw:['denied check-in','denied checkin','hotel overbooked','hotel closed','reservation not found','relocation','urgent accommodation'],not:'Urgent relocations go to [S] Stays Priority regardless of user plan'},{id:'fc_ap_ato',name:'FinCrime: Account Protection (APP Scam / ATO / Phishing)',v:'Account Protection',q:'[C] Account Protection Retail',t:1,kw:['app scam','authorised push payment','authorized push payment','scammed','tricked into sending','account takeover','ato','hacked','unrecognised device','unrecognized device','phishing','stolen device','unauthorized transfer','unauthorised transfer','rap-001','tm-8006','tm-9003'],not:'Card-only fraud without ATO -> Chargeback | Active UAR/Offboarding on ATO -> FIU'},{id:'fc_ap_pv',name:'FinCrime: AP Payment Verification (Pending/Declined Alert)',v:'Account Protection',q:'[C] AP Support - Payment Verification',t:0,kw:['payment verification','tm-8004','tm-8005','tm-8007','tm-8008','tm-8009','tm-8010','tm-8175','pv_protocol','issuing fraud'],not:'If alert cleared & external ref generated -> Transfers'},{id:'fc_aml',name:'FinCrime: AML (EDD / Source of Funds / SOW)',v:'AML',q:'[C] AML Retail',t:1,kw:['edd','enhanced due diligence','source of funds','sof','source of wealth','sow','pot rfi','edd inbound','edd unresponsive'],not:'KYC onboarding steps (POA/TIN) -> KYC'},{id:'fc_scr',name:'FinCrime: Screening / Sanctions / Crypto Screening',v:'Screening',q:'[C] Screening Retail',t:1,kw:['scr-0508','tm-4004','tm-4005','tm-4011','tm-4012','tm-0026','tm-0027','crypto_screening_outbound','crypto_review_lock','sanctions','name screening','counterparty screening'],not:'NEVER escalate to [C] Screening Crypto or [C] Blockchain Monitoring -> Use [C] Screening Retail'},{id:'fc_kyc',name:'FinCrime: KYC (Failed KYC / Name Change / KYC Offboarding)',v:'KYC',q:'[C] KYC Retail',t:1,kw:['kyc failed','kyc_inbound','cdd_inbound','odd_inbound','legal name change','name mismatch','expired_right_to_remain','kyc_not_finished','ssn_not_provided','sentinel_high_risk','kyc_failed_on_onboarding','duplicated account'],not:'Do NOT escalate anonymous chats to KYC | Normal address change -> Retail Account'},{id:'fc_fiu',name:'FinCrime: FIU (UAR / SAR / Offboarding)',v:'FIU',q:'[C] FIU Retail',t:1,kw:['fiu','uar','sar','unusual activity report','offboarding','offboarded','fiu retail','fiu business'],not:'Offboarding due to KYC/Sentinel/Duplicate -> KYC Retail'},{id:'fc_afr',name:'FinCrime: AFR IF / External Enquiries (EE-001 / TM-0316)',v:'AFR IF',q:'[C] Acquiring Fraud Retail',t:1,kw:['external_enquiries','ee-001','enf-0009','afr if','acquiring fraud','inbound fraud report','cnp restriction','fraud association','tm-0316'],not:'If escalated to FIU or Offboarding -> FIU'},{id:'fc_co',name:'FinCrime: Court Orders & Seizures / Bailiffs',v:'CO & Seizures',q:'[C] CO & Seizures Retail',t:1,kw:['seizure','bailiff','court order','warrant','garnishment','plais','tax debt','balances held by fincrime'],not:'General EE without seizure -> EE/AFR'}];if(!document.getElementById('argus-esc-style')){const st=document.createElement('style');st.id='argus-esc-style';st.textContent='#argus-esc-box{margin-bottom:8px;border-radius:11px;padding:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#argus-esc-box .aeb-hd{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#a1a1aa;margin-bottom:6px}#argus-esc-box .aeb-rf{cursor:pointer;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:1px 5px;font-size:10px;color:#e4e4e7}#argus-esc-box .aeb-rf:hover{background:rgba(255,255,255,0.18)}#argus-esc-box .aeb-verdict{padding:7px 8px;border-radius:8px;font-size:12px;font-weight:900;text-align:center;margin-bottom:6px;letter-spacing:.2px}#argus-esc-box .aeb-ok{background:rgba(16,185,129,0.18);border:1.5px solid #10b981;color:#34d399}#argus-esc-box .aeb-bad{background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;color:#f87171}#argus-esc-box .aeb-wait{background:rgba(59,130,246,0.15);border:1.5px solid rgba(59,130,246,0.45);color:#93c5fd}#argus-esc-box .aeb-row{display:flex;gap:4px;margin-bottom:5px}#argus-esc-box select{width:100%;background:rgba(0,0,0,0.42);color:#f4f4f5;border:1px solid rgba(255,255,255,0.14);border-radius:6px;padding:4px 5px;font-size:10.5px;font-weight:600;outline:none;cursor:pointer}#argus-esc-box .aeb-meta{font-size:10.5px;color:#d4d4d8;line-height:1.4;background:rgba(0,0,0,0.28);padding:6px 7px;border-radius:7px;border:1px solid rgba(255,255,255,0.06)}#argus-esc-box .aeb-meta b{color:#fff}';document.head.appendChild(st);}let state={ticket:'',plan:'auto',entity:'auto',topic:'auto'};function detectContext(){const bodyTxt=(document.body.innerText||'');const hdr=bodyTxt.slice(0,3000);let plan='Standard';const dotHdr=hdr.match(/·\s*(STANDARD|BLUESKY|PLUS|PREMIUM|METAL|ULTRA|PRIVATE)\s*·/i);const rawPlan=dotHdr?dotHdr[1]:'';if(/private/i.test(rawPlan))plan='Private';else if(/ultra/i.test(rawPlan))plan='Elite';else if(/(Extra Care|Vulnerable Customer|Potential Extra Care - High)/i.test(hdr))plan='Priority';else if(/(plus|premium|metal)/i.test(rawPlan))plan='Paid Plans';let entity='Global';const dotCountry=hdr.match(/·\s*(Retail|Business)\s*·\s*([^·\n\r]+?)\s*·/i);const countryStr=dotCountry?dotCountry[2].trim():hdr;if(/United States|\bUSA\b|\bUS\b|Revolut Technologies Inc/i.test(countryStr))entity='US';else if(/Mexico|Revolut Mexico/i.test(countryStr))entity='MX';else if(/Japan|Revolut Technologies Japan/i.test(countryStr))entity='JP';else if(/India|Revolut India/i.test(countryStr))entity='IN';else if(/Brazil|Revolut Brazil/i.test(countryStr))entity='BR';let escQueue='';const logMatches=Array.from(bodyTxt.matchAll(/Escalated to\s+(\[[SC]\][^\n\r]+)/gi));if(logMatches.length){escQueue=logMatches[0][1].trim();}else{const anyEsc=Array.from(bodyTxt.matchAll(/Escalated to\s+([^\n\r]+)/gi));if(anyEsc.length)escQueue=anyEsc[0][1].trim();}let custTxt='',agentTxt='';const chatRoot=document.getElementById('ticketsPageChat')||document.querySelector('[data-testid="ticketsPageChat"]');if(chatRoot){const bubbles=Array.from(chatRoot.querySelectorAll('[data-messageid], div[class*="MessageBubble"]'));const rRect=chatRoot.getBoundingClientRect();const agentMsgs=[];bubbles.forEach(b=>{if(b.closest('#argus-dock-panel'))return;const t=(b.innerText||'').replace(/Show (translated|original|translation).*/gi,'').trim();if(!t||t.length<3)return;const bRect=b.getBoundingClientRect();const isAgent=(b.dataset.argusSender==='agent')||(rRect.width>0&&bRect.width>0&&((rRect.right-bRect.right)+25<(bRect.left-rRect.left)));if(isAgent)agentMsgs.push(t);else custTxt+=' '+t;});agentTxt=agentMsgs.slice(-4).join(' ');}const fullLow=(custTxt+' '+agentTxt+' '+agentTxt).toLowerCase();let bestRule=RULES[17],bestScore=0;RULES.forEach(r=>{let sc=0;r.kw.forEach(k=>{if(fullLow.includes(k))sc+=(k.length>8?3:2);if(agentTxt.toLowerCase().includes(k))sc+=2;});if(sc>bestScore){bestScore=sc;bestRule=r;}});return{plan,entity,escQueue,detectedTopicId:bestScore>0?bestRule.id:'tr_in_out',bestScore};}function evaluate(ctx,plan,entity,topicId){const rule=RULES.find(r=>r.id===topicId)||RULES[0];const q=ctx.escQueue;const qLow=q.toLowerCase();let expected=rule.q;if(entity==='MX'){expected=(plan==='Paid Plans'||plan==='Elite'||plan==='Private')?'[S] Mexico Premium':'[S] Mexico Standard';}else if(entity==='JP'){if(rule.v==='Account Protection')expected='[C] Account Protection Retail';else if(['AML','Screening','FIU','AFR IF','CO & Seizures'].includes(rule.v))expected=rule.q;else if(rule.v==='KYC')expected='[S] Japan KYC';else if(rule.v==='Access Recovery')expected='[S] Japan Access Recovery';else{const jpTier=(plan==='Paid Plans'||plan==='Elite'||plan==='Private')?'Paid Plans':'Standard';expected='[S] Japan '+rule.v+' '+jpTier;}}else if(entity==='IN'){if(['AML','Screening','FIU','AFR IF','CO & Seizures'].includes(rule.v))expected=rule.q;else expected='[S] India - '+rule.v;}else if(entity==='US'){if(rule.v==='Wealth & Trading'&&rule.id!=='wt_stocks')expected='[S] US Expansion - W&T';else if(rule.v==='Chargeback')expected='[S] US Expansion - Chargeback';else if(['Retail Account','Retail Product'].includes(rule.v))expected='[S] [SPEC] Global Queues';else if(rule.t){expected=rule.q+' ('+plan+')';}}else{if(rule.t){let tier=plan;if(plan==='Private'&&rule.q.startsWith('[S]'))tier='Elite';expected=rule.q+' - '+tier;}}if(!q){return{status:'wait',verdict:'⏳ Not Escalated Yet',expected,reason:'Topic: '+rule.name,rule};}if(/calls\b/i.test(qLow))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Never manually escalate chats to Phone Support queues.',rule};if(qLow.includes('screening crypto')||qLow.includes('blockchain monitoring'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Forbidden internal queue. Route to [C] Screening Retail by plan.',rule};if(qLow.includes('tm retail')||qLow.includes('transaction monitoring'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Never escalate directly to TM Retail.',rule};if(qLow.includes('cross check')||qLow.includes('cross-check')||qLow.includes('[cpt]'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Internal crosscheck channel only, no manual escalation.',rule};if(qLow.includes('advanced')&&['US','MX','JP','IN'].includes(entity))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Dedicated Expansion queues do not escalate to Global Advanced.',rule};if(entity==='US'&&qLow.includes('us expansion')&&!['wt_crypto','wt_fx','wt_cfd','chb_fraud','chb_dispute'].includes(rule.id))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'US Cards, Transfers & Savings go to Global queues, not US Expansion.',rule};if(['MX','JP','IN'].includes(entity)&&!qLow.includes(entity==='MX'?'mexico':entity==='JP'?'japan':'india')&&!['AML','Screening','FIU','AFR IF','CO & Seizures','Account Protection'].includes(rule.v))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Must stay in dedicated '+entity+' expansion queue.',rule};const vChecks={'Access Recovery':['access recovery'],'Card Payments':['card payment'],'Cards':['card payment','cards'],'Top-ups':['card payment','top-up','top up'],'Chargeback':['chargeback'],'Insurance & Credit':['insurance','credit'],'Wealth & Trading':['wealth','trading','crypto','forex'],'Transfers':['transfer'],'Retail Account':['retail account','referral'],'Retail Product':['retail product'],'Stays':['stays'],'Account Protection':['account protection','ap support'],'AML':['aml'],'Screening':['screening'],'KYC':['kyc'],'FIU':['fiu'],'AFR IF':['acquiring fraud','afr','external enquiries'],'CO & Seizures':['seizure','co &']};const validVertical=(vChecks[rule.v]||[]).some(tag=>qLow.includes(tag))||(entity==='MX'&&qLow.includes('mexico'))||(entity==='US'&&rule.v==='Retail Account'&&qLow.includes('spec'));if(!validVertical){return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Wrong team/vertical for '+rule.name+'. '+rule.not,rule};}if(rule.id==='wt_cfd'&&!qLow.includes('priority'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'CFDs must strictly go to [S] Wealth & Trading Priority.',rule};if(rule.id==='ic_upl'&&!qLow.includes('helper')&&plan!=='Elite')return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Non-Ultra UPL queries go to [S] Insurance & Credit Helpers.',rule};if(rule.id==='rp_telco'&&!qLow.includes('telco'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'eSIM/Mobile Plans must go to [S] Retail Product - Telco.',rule};if(rule.id==='st_mod'&&!qLow.includes('modification'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Stays cancellations/changes must go to [S] Stays Modifications.',rule};if(rule.id==='st_reloc'&&!qLow.includes('priority')&&!qLow.includes('modification'))return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Urgent Stays relocations must go to [S] Stays Priority.',rule};if(rule.t&&!qLow.includes('helper')&&!qLow.includes('ongoing')&&!qLow.includes('outage')&&!qLow.includes('advanced')){let reqTier=plan.toLowerCase();if(plan==='Private'&&qLow.startsWith('[s]'))reqTier='elite';const tierOk=(reqTier==='paid plans'&&(qLow.includes('paid plan')))||(reqTier==='standard'&&qLow.includes('standard'))||(reqTier==='priority'&&qLow.includes('priority'))||(reqTier==='elite'&&qLow.includes('elite'))||(reqTier==='private'&&qLow.includes('private'));if(!tierOk)return{status:'bad',verdict:'❌ Incorrect Escalation',expected,reason:'Wrong customer segment/tier. Detected: '+plan,rule};}return{status:'ok',verdict:'✅ Correct Escalation',expected,reason:'Matched: '+rule.name+' ('+plan+' / '+entity+')',rule};}function render(){const pnl=document.getElementById('argus-dock-panel');if(!pnl){alert('Open ARGUS first, then click Escalation Audit!');return;}if(state.ticket!==location.pathname){state={ticket:location.pathname,plan:'auto',entity:'auto',topic:'auto'};}const ctx=detectContext();const activePlan=state.plan==='auto'?ctx.plan:state.plan;const activeEnt=state.entity==='auto'?ctx.entity:state.entity;const activeTop=state.topic==='auto'?ctx.detectedTopicId:state.topic;const res=evaluate(ctx,activePlan,activeEnt,activeTop);let box=document.getElementById('argus-esc-box');if(!box){box=document.createElement('div');box.id='argus-esc-box';const firstBox=pnl.querySelector('.adp-box');if(firstBox)pnl.insertBefore(box,firstBox);else pnl.appendChild(box);}const vCls=res.status==='ok'?'aeb-ok':res.status==='bad'?'aeb-bad':'aeb-wait';const topicOpts=RULES.map(r=>'<option value="'+r.id+'"'+(r.id===activeTop?' selected':'')+'>'+r.name+'</option>').join('');const planOpts=['Standard','Paid Plans','Priority','Elite','Private'].map(p=>'<option value="'+p+'"'+(p===activePlan?' selected':'')+'>Plan: '+p+'</option>').join('');const entOpts=['Global','US','MX','JP','IN','BR'].map(e=>'<option value="'+e+'"'+(e===activeEnt?' selected':'')+'>Entity: '+e+'</option>').join('');box.innerHTML='<div class="aeb-hd"><span>🧭 ESCALATION AUDIT</span><button class="aeb-rf" id="aeb-rescan" title="Re-scan Chat">🔄</button></div><div class="aeb-verdict '+vCls+'">'+res.verdict+'</div><div class="aeb-row"><select id="aeb-s-plan">'+planOpts+'</select><select id="aeb-s-ent">'+entOpts+'</select></div><div class="aeb-row"><select id="aeb-s-top">'+topicOpts+'</select></div><div class="aeb-meta"><div><b>Escalated to:</b> '+(ctx.escQueue||'<i>None in log</i>')+'</div><div><b>Expected:</b> '+res.expected+'</div><div style="margin-top:3px;color:'+(res.status==='bad'?'#fca5a5':'#a1a1aa')+';">'+res.reason+'</div></div>';box.querySelector('#aeb-rescan').onclick=()=>{state={ticket:location.pathname,plan:'auto',entity:'auto',topic:'auto'};render();};box.querySelector('#aeb-s-plan').onchange=function(){state.plan=this.value;render();};box.querySelector('#aeb-s-ent').onchange=function(){state.entity=this.value;render();};box.querySelector('#aeb-s-top').onchange=function(){state.topic=this.value;render();};}window.__argusEscRun=render;render();setInterval(render,2500);})();
+"""Structured knowledge base for [Support] Escalations Table.
+
+Can be imported or run directly to search topics, queues, and "what not to escalate" rules.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import Any
+
+ESCALATIONS_DATA: dict[str, Any] = {
+    "document_title": "[Support] Escalations Table",
+    "owners": {
+        "primary": [
+            "CCM Retail Horizontal",
+            "CCM Business Horizontal"
+        ],
+        "secondary": [
+            "@retail_ccm_smes",
+            "@fc-cx-managers"
+        ]
+    },
+    "department": "Support",
+    "team": "Services Support Change & Content Management",
+    "general_rules": {
+        "phone_support": "Do not manually escalate chats to Phone Support queues. Check the customer and topic eligibility first and, when eligible, share the in-app call entry point by following the dedicated Phone Support policy.",
+        "before_you_escalate": [
+            "Identify Issue",
+            "Check BO/Account Restrictions (see [R] AMLR - General Navigation & Backoffice Tabs - FinCrime)",
+            "Check Alerts & Logs; escalate if necessary",
+            "Check Transaction Sources: BackOffice Workflows Tab -> Inspect Active Workflows & Creation Timestamps",
+            "Topup EXTERNAL_CARD -> Card Payments",
+            "Topup EXTERNAL_ACCOUNT / IBAN -> Transfers",
+            "Transfer (Source: Internal) -> Retail Product (Pockets/Vaults)",
+            "RevPayment -> Crypto merchants (Binance, MoonPay, KuCoin, Ramp) -> AP L1 (APP); Lifestyle (Air Miles, Stays, Gift Cards, RevPoints) -> Retail Product"
+        ]
+    },
+    "customer_segmentation_tiers": {
+        "Standard": [
+            "Standard",
+            "Bluesky plans"
+        ],
+        "Paid Plan": [
+            "Plus",
+            "Premium",
+            "Metal plans"
+        ],
+        "Priority": [
+            "Vulnerable Customers (Tags: Extra Care, Extra Care - Self Disclosure, Potential Extra Care - High)"
+        ],
+        "Paid Plans & VCs Calls Queues": [
+            "[R] Escalations to Phone Support NON-Ultra, IE Salaried Callbacks and Manager Escalations"
+        ],
+        "Elite": [
+            "Ultra (Chat): Elite Chat (Retail & Advanced team)",
+            "Ultra (Call): Elite Calls (Advanced team only) - Ultra and Manager Escalations",
+            "Ipsos survey users (BO tag: survey user)",
+            "Restricted salaried users (BO label: Restricted salaried users)",
+            "PEPs (BO tag: Confirmed PEP)",
+            "High reach users (BO tag: High reach user)",
+            "Long term Salaried Users (BO label: Salaried long tenure, salary in Revolut 2.5+ years)"
+        ],
+        "Private": [
+            "Private Bank Plan"
+        ],
+        "Advanced Escalations (Chat)": [
+            "Manager escalations + RTM Escalations + Advanced Escalations (Previously PE - CSUR escalations) (Advanced team & PEs)"
+        ],
+        "Outage / Ongoing": [
+            "Queue for handling system-wide outages or major incidents"
+        ]
+    },
+    "retail_escalations": [
+        {
+            "vertical": "Access Recovery",
+            "main_topic": "Passkeys & Forgotten Credentials",
+            "subtopics": [
+                "Passkeys FAQs, authentication issues using Passkeys",
+                "Passcode / PIN reset, forgotten phone number or email address",
+                "Authentication Failures: OTP delivery failure, SMS code not received, biometric / selfie verification failure, active liveness / Dante verification issues",
+                "Device & App Issues: App bugs/login crashes, scrambled passcode keyboard, malware/rooted/jailbroken device blocker on login screen",
+                "Onboarding / Registration Conflict: New phone number already linked to another customer account (User A / User B flow), Common Name DOB conflict, name/surname mismatch against document"
+            ],
+            "what_not_to_escalate_there": [
+                "Non-passkey biometric device lock issues -> Retail Product",
+                "Business accounts: Business anonymous users -> [S] Business Anonymous",
+                "Revolut <18: Passcode reset / details change for <18 accounts -> [S] Retail Account",
+                "General Onboarding / Verification: Document rejection, unsupported ID types, KYC onboarding failures -> [S] KYC Support (not anonymous chats; first verify + link BO before escalation)",
+                "Device Hardware: User-side hardware faults (e.g. broken front camera)",
+                "Mexico & India: Escalate to dedicated regional expansion queues ([S] Mexico Standard / [S] India Retail Access Recovery)",
+                "Payment / Transfer Issues: Inflight-transaction queries or transfer OTP -> Transfers / Card Payments",
+                "Anonymous users with Waitlist - Created / Confirmed Duplicated - Terminated accounts with access issues -> AR",
+                "Anonymous user blocked due to Sentinel offboarding reasons",
+                "Anonymous login issues for Brazil, Israel, USA, NZ, AU, Japan -> global AR queues"
+            ],
+            "queues": [
+                "[S] Retail Access Recovery",
+                "[S] Retail Access Recovery Outage / Ongoing Issue",
+                "Access Recovery - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Access Recovery",
+            "main_topic": "Logged-In Users (Security, Protection & Verification)",
+            "subtopics": [
+                "Street Mode: Street Mode selfie authentication issues, unable to disable/enable Street Mode, Trusted Wi-Fi / location fallback authentication issues",
+                "Wealth Protection Identity Checks: Active limits adjustment, withdrawals/transfers over threshold requiring selfie check",
+                "Account Security / Credentials: In-app Passcode / PIN reset, New Device Login, Reminder passcode change"
+            ],
+            "what_not_to_escalate_there": [
+                "Confirmed/Duplicated/Terminated/Banned/Dormant Accounts -> RA",
+                "Street Mode Error TM-0049/General FAQs -> explain via [R] Access Recovery - Logged-in User - Wealth Protection Identity Checks / Street Mode - Chat Handling page; do not escalate if self-serve applies",
+                "WP security/technical exceptions (suspicious devices/time zones/selfies, ACM-1001 restrictions -> relevant Fraud/AP route; BO not reacting -> Tech/bug review)",
+                "Malware / Rooted device blockers for logged-in users -> Retail Product",
+                "Personal detail changes (Phone, Email, Address) for logged-in users -> Retail Account",
+                "Transfer SMS OTP -> Transfers",
+                "General Wealth & Trading Queries -> Wealth & Trading"
+            ],
+            "queues": [
+                "[S] Retail Access Recovery",
+                "Access Recovery - Logged-in User queues"
+            ]
+        },
+        {
+            "vertical": "Access Recovery",
+            "main_topic": "Third-Party Chats, Web App & Terminated/Offboarded Accounts",
+            "subtopics": [
+                "Third party reaching out because account owner cannot log in (do not disclose account-specific info to third party)",
+                "Web App (Desktop/Browser) login, troubleshooting, and QR/2FA authentication issues",
+                "Terminated / Offboarded Account Inquiries: Pre-verification triage for statements"
+            ],
+            "what_not_to_escalate_there": [
+                "Non-login 3rd-party inquiries -> GDPR rules, route to respective product vertical",
+                "Bereavement & Power of Attorney -> PoA / Bereavement workflow; Business PoA/3rd-party -> [S] Business",
+                "Web App bug with specific products once logged in -> Respective vertical (W&T, Retail Product)",
+                "Post-verification statement request for terminated account -> Retail Account",
+                "Refund received on terminated account -> Card Payments",
+                "Hard-offboarded / FIU accounts -> FIU Inbound Email",
+                "KYC light offboarding / SEN cases -> KYC Inbound Email",
+                "Account Takeover (ATO) / scam -> Account Protection Retail Inbound Email"
+            ],
+            "queues": [
+                "[S] Retail Access Recovery",
+                "Retail Account (post-verification statements)"
+            ]
+        },
+        {
+            "vertical": "Cards & Card Payments",
+            "main_topic": "Card Transactions, Declines, Auth Holds, Security Controls, 3DS, Currency Conversion & Refunds",
+            "subtopics": [
+                "Card Transaction Statuses: Pending, Completed, Reverted, Offline card transactions",
+                "Declines & Troubleshooting: In-app card decline reasons, blocked merchant categories, restricted countries/locations",
+                "Authorisations & Pre-Auth: AFD holds, hotel/car rental pre-authorisations, sharing auth codes with merchants",
+                "Security Controls: Gambling block, online transactions, location-based security, ATM withdrawals toggle",
+                "3D Secure (3DS / RevP): 3DS biometric / in-app card payment authentication prompts",
+                "Currency Conversion: DCC and exchange rates applied at point of sale",
+                "Merchant Refunds & Card Credits: Visible BO refunds, pending refund timeframes (up to 5 days), reverted/declined refunds, Digital Wallet Refund Matching (DPAN vs FPAN), Push to Card incoming",
+                "Subscriptions & Payment Stop Requests: Subscription management, Payment Stop Request (PSR)",
+                "ATM Withdrawal: ATM status, map, limits, fees, non-card ATM (BLIK / MB Way)",
+                "Card Lifecycle & Management: Ordering, delivery, physical/virtual/disposable/metal/ultra cards, activation, PIN reveal/reset/unblock, Digital Wallets (XPay), System-Blocked Cards (Sherlock)"
+            ],
+            "what_not_to_escalate_there": [
+                "Fraudulent / Unrecognised Transactions (even if pending) -> [S] Chargeback",
+                "Revolut Pay (RevPay) button checkout (internal transfer, not card processing) -> [S] Retail Product",
+                "Scams / Authorised Push Payment -> Account Protection Retail queue for customer's segment",
+                "Business Cards / Business account transactions -> [S] Business Payments Standard / Elite",
+                "Chargeback Dispute Follow-up (merchant refund > 5 days not received and customer wants to dispute) -> [S] Chargeback",
+                "Existing Chargeback Cases (active dispute open) -> Chargeback",
+                "Disputed Subscription (cancelled prior to charge, wants refund/dispute) -> [S] Chargeback",
+                "ATM Excess Charge Dispute / ATM cash not dispensed where pre-auth expired and funds permanently captured -> [S] Chargeback",
+                "Non-Card ATM: BLIK / MB Way cash withdrawal issues -> Transfers / Retail Product",
+                "Compromised Card / ATO / stolen card details -> Block card & escalate to Account Protection Retail / [S] Chargeback",
+                "<18 Card Management -> [S] Retail Account",
+                "Bank Transfers (Inbound/Outbound) -> [S] Transfers; Open Banking -> Transfers Queues; SOF/Compliance holds -> [C] AML / FIU Queues",
+                "Negative balance from plan fees/spare change -> Retail Account; Pro Card payments declined -> Retail Product; Account-level restriction by FinCrime -> [C] FCG Restricted Accounts",
+                "Mexico Entity (MX) -> route to [S] Mexico Standard / Premium, NOT global CP queues",
+                "Dedicated expansion queues do not escalate to Global Advanced queues"
+            ],
+            "queues": [
+                "[S] Card Payments (Standard / Paid Plan / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] UK Card Payments (Paid Plans & Standard Calls / Elite Calls)",
+                "[S] US Expansion - Card Payments / [S] Brazil Card Payments / [S] India - Card Payments",
+                "Card Payments - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Top-Ups (Top ups Team)",
+            "main_topic": "Card & Digital Wallet Top-Ups, Auto Top-Up, Failed/Pending/Reverted Top-Ups, Fees/Limits/Currencies & Processors",
+            "subtopics": [
+                "Supported Payment Methods: Debit/Credit cards, Apple Pay, Google Pay (xPay), iDEAL",
+                "Cash & Check Deposits: Mobile check deposits (US) and partner retail cash deposit locations",
+                "Payment Links (Receiving Money): Requesting/collecting funds from non-Revolut users",
+                "Card Linking & Verification: Adding external funding cards, 3DS micro-charge verification, updating billing details",
+                "Auto Top-Up: Setup, configuration, eligibility rules (>=30 days, MIT), troubleshooting",
+                "Failed, Pending & Reverted Top-Ups: 3DS timeouts/OTP, processor/system declines (AVS, etc.), pending/missing top-up funds, confirmation documents",
+                "Fees, Limits & Currencies: Card top-up fees, daily/weekly/annual rolling limits, DCC vs Revolut rates",
+                "Top-Up Returns & Chargeback Reversals: TOPUP_RETURN handling, negative balance after return",
+                "Card Top-Up Processors & Duplicate Top-Ups: Mall, Stripe, Worldpay; duplicate card top-up charges"
+            ],
+            "what_not_to_escalate_there": [
+                "Bank Transfers (Inbound/Outbound), SEPA, SWIFT, Faster Payments, ACH -> [S] Transfers",
+                "Open Banking / Easy Bank Transfers -> [S] Transfers",
+                "Push to Card Inbound -> Card Payments (General) / Transfers; Sending via Payment Link (Outbound) -> [S] Transfers",
+                "Direct Debit Failures -> [S] Transfers",
+                "Account Under Review / Restricted -> [C] FCG Restricted / Unrestricted Accounts",
+                "Compliance / Source of Funds (SOF) / PENDING_TM_ASSESSMENT -> [C] AML Retail / [C] Screening Retail",
+                "Kids & Teens (<18) external top-up -> [S] Retail Account",
+                "Forex / Weekend Markup -> [S] Wealth & Trading",
+                "Negative Balance from Subscription / Plan Fees -> [S] Retail Account",
+                "Transfer processors (AMOEBA, EBA_RT1, Flash, Litas, Barclays, JPMorgan) -> [S] Transfers",
+                "Mexico Entity (MX) -> [S] Mexico Standard / Premium, NOT global Card Payments queues"
+            ],
+            "queues": [
+                "[S] Card Payments / [S] Transfers (as specified)",
+                "[S] US Expansion (Card Payments scope)",
+                "Brazil & India dedicated expansion queues",
+                "[S] Mexico Standard / Premium (MX)"
+            ]
+        },
+        {
+            "vertical": "Chargeback (Chargeback team)",
+            "main_topic": "Fraud & Unauthorised Card Transactions, Commercial/Merchant Disputes, Case Updates & Provisional Credit/Instalments",
+            "subtopics": [
+                "Unrecognised Card Transactions: Stolen card details, unrecognised online/in-store card debits (pending or completed)",
+                "Fraudulent Subscriptions & Card Fraud Inbound Reports",
+                "Commercial / Merchant Disputes: Goods/services not received, not as described/defective, cancelled subscriptions, duplicate/excess charges, missing merchant refunds (>5 business days), ATM cash discrepancy",
+                "Case Updates, Reconsideration & Outcome Review: Dispute/pre-arbitration status updates, review of lost/ineligible disputes with new evidence, proof of outcome, network escalations",
+                "Provisional Credit & Instalment Disputes: Provisional credit issuance/reversals, disputed merchant debits related to instalment repayments (Pay Later / Split in Instalments)",
+                "Manual Form Submission & Additional Documentation"
+            ],
+            "what_not_to_escalate_there": [
+                "Account Takeover (ATO) / Stolen Device with account compromised -> [Support] Phishing, Scam & Fraud / Account Protection Retail",
+                "Legitimate Card Declines / Auth Holds / AFD holds -> [S] Card Payments",
+                "Pending Merchant Refunds (<= 5 days) -> [S] Card Payments",
+                "Active Subscription Management / Payment Stop Request (PSR) -> [S] Card Payments",
+                "Non-Card Payment Disputes (P2P, bank transfer recalls) -> [S] Transfers",
+                "RevPoints / Cashbacks / Perks / Loyalty reward issues -> [S] Retail Product",
+                "Small Credit / Loan Requests -> do NOT escalate to Chargeback",
+                "Stays Pay Now (strictly ineligible for chargeback) -> [S] Stays Modifications",
+                "Self-Serve Eligible Customers -> guide to submit in-app under transaction details",
+                "KYC / Identity Document Uploads -> [S] KYC Support",
+                "Mexico Customers -> [S] Mexico Standard / Premium (do not route to global Chargeback queues)"
+            ],
+            "queues": [
+                "[S] Chargeback (Standard / Paid Plan / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Chargeback Advanced - Escalations (Manager Escalation chats & Ultra calls only)",
+                "[S] UK Chargeback (Paid Plans & Standard Calls / Elite Calls)",
+                "[S] US Expansion - Chargeback / India Cards & Card Payments / [S] India ATO",
+                "Chargeback - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Credit (Credit & Insurance team)",
+            "main_topic": "Unsecured Personal Loans (UPL), Credit Cards (CC), Pay Later (BNPL), Mortgages (MTG), Credit Pockets & Credit Bureau/Underwriting",
+            "subtopics": [
+                "Unsecured Personal Loans (UPL): Application & eligibility, loan management & repayments, fees & interest, loan cancellation & hardship, refinancing (REFI), overdraft",
+                "Credit Cards (CC): Application & limits, statements & billing, instalment plans (Split in Instalments), balance transfers & excess funds, special fees & taxes (Ireland Stamp Duty, credit cashback)",
+                "Pay Later (BNPL): Activation & limits, instalment management, troubleshooting, account cancellation, merchant refunds on Pay Later",
+                "Mortgages (MTG): Application & roll-out inquiries (active roll-out in Lithuania)",
+                "Credit Pockets & Disputed Instalment Repayments",
+                "Credit Bureau, Scoring & Underwriting Declines: Hard credit checks, credit register data (BIK in Poland, CCR in Ireland), application re-assessment, general application decline clarifications"
+            ],
+            "what_not_to_escalate_there": [
+                "'Free cash' / financial help (VC cases) or 'small help' / goodwill under market minimum -> NOT A LOAN / CREDIT REQUEST; do NOT escalate to Insurance & Credit queues",
+                "Credit availability in non-operational markets -> handle in chat / follow [R] Credit Escalations 1.2 Credit Non-Operational Markets; do NOT escalate to Credit specialised queue",
+                "(Soft/general) credit checks during onboarding -> refer to [R] Legal Queries - Legal entities - FAQ; do NOT escalate to Credit Team",
+                "Card Disputes & Chargebacks on Credit Card -> [S] Chargeback",
+                "Physical Card Delivery / PIN / Wallet Integration on Credit Card -> [S] Card Payments",
+                "Disputing a BNPL Merchant Purchase -> [S] Chargeback",
+                "Negative Balance on Debit Pockets: offline transactions -> Card Payments; plan fees -> Retail Account",
+                "Early Salary / Early Direct Deposit (EARLY_CREDIT) -> [S] Transfers",
+                "General Credit History Requests (No Active Credit Product) -> explain; do not escalate",
+                "Non I/C agents (excluding ULTRA users): strictly escalate only the listed UPL topics to [S] Insurance & Credit Helpers; other credit products follow standard horizontal/I/C rules"
+            ],
+            "queues": [
+                "[S] Insurance & Credit (Priority / Paid Plans / Standard / Elite / Outage / Ongoing Issue)",
+                "[S] Insurance & Credit Helpers (strictly listed UPL topics for non-I/C agents, excluding ULTRA)",
+                "[S] Insurance & Credit Advanced - Escalations",
+                "[S] UK Insurance & Credit (Elite Calls / Paid Plans & Standard Calls)",
+                "Insurance & Credit - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Insurance (Insurance team)",
+            "main_topic": "Travel Insurance (TI), Everyday Protection (EDP) & Purchase Cover, Cancellation For Any Reason (CFAR), Car Insurance (CI), Pet Insurance (PI), Claims/Payouts & General FAQs",
+            "subtopics": [
+                "Travel Insurance (TI): Policy & coverage, covered events (medical, cancellation, curtailment, baggage, winter sports), policy certificates, PEMC",
+                "Everyday Protection (EDP) & Purchase Cover: Stolen/damaged goods, personal liability, baggage lost/delayed, hire excess, refund protection, ticket cover, coverage limits & deductibles",
+                "Cancellation For Any Reason (CFAR): Coverage & eligibility, initiating claims, exclusions & time limits",
+                "Car Insurance (CI): Application & quotes (IE), policy amendments (MTA), renewals & cancellations, document validation & Dante, car rental excess",
+                "Pet Insurance (PI): Cover & benefits, eligibility & exclusions, managing policy",
+                "Insurance Claims, Payouts & Provider Escalations: Claim submission guidance, status tracking, delayed claims (>30 days), delayed payouts (Ultra >7 days), reimbursements & settlements",
+                "General FAQs & Offered Insurance Products"
+            ],
+            "what_not_to_escalate_there": [
+                "Flight Delay Lounge Passes (SmartDelay) -> [S] Retail Product",
+                "Airline Compensation claims against airlines (e.g. AirHelp) -> explain partner terms or route to Retail Product",
+                "Plan Downgrades / Fee Refunds -> [S] Retail Account",
+                "Disputing Merchant Charges / Not Received -> [S] Chargeback",
+                "Fraudulent Card Debits -> Account Protection Retail / [S] Chargeback",
+                "Standard Hotel / Flight Booking Cancellations via Stays -> [S] Retail Product",
+                "Unrelated Identity KYC -> [S] KYC Support",
+                "Insurance does NOT replace failed chargebacks (covers physical item, disputes cover financial transaction)"
+            ],
+            "queues": [
+                "[S] Insurance & Credit (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "IESD Product Team (PT) via Tier 2 for delayed claims (>30d) / delayed payouts (Ultra >7d)",
+                "Insurance & Credit - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Crypto & Forex (Crypto & Forex team)",
+            "main_topic": "Crypto Trading & Portfolio, Crypto Deposits & Withdrawals, Crypto Staking (Earn) & Learn, Revolut Ramp & Revolut X, Forex (FX) & Currency Management, P2P Crypto & Negative Balance Offset, Supported Currencies",
+            "subtopics": [
+                "Crypto Trading & Portfolio: Buy & sell, pricing/fees/spreads/weekend markups, portfolio & tax (PnL, average buying price, statements/tax reports), Spare Change & Collections, Token Delisting",
+                "Crypto Deposits & Withdrawals: Supported networks, pending confirmations, min deposit, memo/tag, outbound on-chain transfers, TXID, gas fees, pending/reverted transactions",
+                "Crypto Staking (Earn) & Learn: Staking ETH/SOL/DOT/ADA, APY, bonding/unbonding, staking rewards, Crypto Learn & Earn",
+                "Revolut Ramp & Revolut X: Ramp fiat-to-crypto queries/delays/refunds (anonymous Ramp users route as Anonymous -> Crypto Ramp); Revolut X onboarding/navigation/fees/syncing",
+                "Forex (FX) & Currency Management: FX exchange rates, monthly fair usage exchange limits & fees, Multi-Currency Pockets, rate adjustments, scheduled/auto exchanges",
+                "P2P Crypto & Negative Balance Offset Clarifications",
+                "Supported Currencies for holding / account activation, deactivation, reactivation"
+            ],
+            "what_not_to_escalate_there": [
+                "Crypto Investment Scams (APP) -> [Support] Phishing, Scam & Fraud",
+                "Crypto Card Purchases on External Exchanges (declined) -> [S] Card Payments",
+                "Blockchain Compliance Hold / AML Screening -> [C] Screening Retail / [C] AML Retail (do NOT escalate to [C] Blockchain Monitoring directly)",
+                "Fiat Bank Transfers to Crypto Exchanges -> [S] Transfers",
+                "Flexible Cash Funds / Savings Interest (MMF/Vaults) -> [S] Wealth & Trading / Retail Account",
+                "Missing standard sign-up referral reward -> [S] Retail Account Standard",
+                "Revolut X Fiat Pocket Transfers (REVX_FIAT) bank transfer errors -> [S] Transfers",
+                "Web App general browser login/troubleshooting -> [S] Retail Access Recovery",
+                "Scheduled Exchange Execution Failure -> [S] Transfers",
+                "Negative Balance without FX Fee -> Retail Account; Card Spending Priority Order -> [S] Card Payments",
+                "P2P Transfers Involving Crypto -> do NOT escalate to Crypto & Forex; escalate to [S] Transfers",
+                "Mexico customers -> [S] Mexico Standard / Premium"
+            ],
+            "queues": [
+                "[S] Wealth & Trading (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Wealth, Crypto & Forex (Elite Calls / Paid Plans & Standard Calls)",
+                "[S] UK Wealth, Crypto & Forex (Elite Calls / Paid Plans & Standard Calls)",
+                "[S] US Expansion - W&T (US entity trading/crypto)",
+                "Wealth & Trading - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Wealth & Trading (Wealth & Trading team)",
+            "main_topic": "Stock & ETF Trading (Equities, Bonds & Commodities), Flexible Cash Funds (FCF) & Savings, Corporate Actions & Proxy Voting, Settlement/Withdrawable Cash & Dividends, CFDs, W-8BEN/Tax/Statements, Portfolio Transfers/ISA/Terminal, Trading Onboarding & Compliance, Robo-Advisor",
+            "subtopics": [
+                "Stock & ETF Trading (US, EU, UK equities, order types, pricing/spreads, ETFs, bonds, commodities, Trading Pro)",
+                "Flexible Cash Funds (FCF - MMF) & Savings Vaults / Partner Banks / Kids & Teens Savings / Deposits & Instant Withdrawals",
+                "Corporate Actions & Proxy Voting (Say on Pay / AGM, cash/stock mergers, rights offerings, tender offers, warrants, reverse splits)",
+                "Settlement (T+1), Withdrawable Cash & Dividends (missing dividends, ex-dividend, withholding tax, delays)",
+                "Contracts for Difference (CFDs): CFD trading & leverage, shorting, eligibility/tests, withdrawable amounts, corporate actions, CFD statements/docs, margin calls & liquidation",
+                "W-8BEN, Tax & Reporting: W-8BEN treaty forms, NIN/TIN for trading, monthly statements, consolidated annual tax packs, realized capital gains/loss",
+                "Portfolio Transfers (ACATS), Stocks & Shares ISA (UK), Revolut Terminal & Web Trading",
+                "Trading Onboarding & Compliance Blocks: PEP screening > 24h -> [C] PEP Screening, honorifics, 5+ failed attempts in 30d, marital status (LT spousal consent), OCR/legal name mismatch, API errors",
+                "Robo-Advisor (Automated Investing): Portfolio setup & assessment, portfolio management, fees & invoicing, account closure"
+            ],
+            "what_not_to_escalate_there": [
+                "External Broker Card Purchases (e.g. eToro, Interactive Brokers) -> [S] Card Payments",
+                "Main Account Negative Balance via Auto-Withdrawals from FCF -> [S] Retail Account",
+                "Incorrect or missing non-interest personal vaults -> [S] Retail Account",
+                "Inbound/Outbound Bank Transfers to External Accounts -> [S] Transfers",
+                "PLAIS Debt Claim / FinCrime Restriction on Trading Balance -> [C] FinCrime General / [C] Screening Retail",
+                "CFDs must strictly be handled in [S] Wealth & Trading (if received in Standard/Paid Plans, silently escalate to W&T Priority; do not leave markdown for wrong W&T queue)",
+                "General KYC / Profile TIN Submissions -> [S] KYC Support",
+                "Empty / Unassociated Statement Inquiries -> clarify which product statement is missing first",
+                "Cash ISA / Bank ISA (Non-Trading) -> general Savings within W&T",
+                "General Web App Login Failures -> [S] Retail Access Recovery",
+                "Manual Stock / ETF Order Queries (when on Robo-Advisor) -> [S] Wealth & Trading",
+                "Deposit Bank Transfer Delays (Robo-Advisor) -> [S] Transfers",
+                "Financial Advice / Market Guarantees -> do not give personal market advice",
+                "US Trading / Robo-Advisor -> [S] US Expansion - W&T; Mexico -> [S] Mexico Standard / Premium"
+            ],
+            "queues": [
+                "[S] Wealth & Trading (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] US Expansion - W&T / [S] Mexico Standard / Premium",
+                "Wealth & Trading - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Transfers (Transfers Team)",
+            "main_topic": "Inbound Bank Transfers & Account Details, Verification of Payee (VoP) / CoP, Inbound Open Banking & Local Rails, Peer-to-Peer (P2P) & Social Payments, Outbound Bank Transfers, Direct Debits/Scheduled Transfers/Local Outbound/P2C, APM Transfers, Helpers Queues",
+            "subtopics": [
+                "Inbound Bank Transfers & Account Details: Missing/delayed inbound SEPA/SWIFT/FPS/ACH/local rails, IBAN/BIC/Sort Code/Routing Number, Salary & Direct Deposits / Early Salary (EARLY_CREDIT), Reversals & Returns, Revolut Pro Inbound",
+                "Verification of Payee (VoP) / Confirmation of Payee (CoP): Name mismatch warnings, false name mismatch reports",
+                "Inbound Open Banking & Local Rails: Easy Bank Transfers, inbound Bizum, IBERPAY_INSTANT, EBA_RT1, BO matching (EXTERNAL_ACCOUNT / IBAN)",
+                "Peer-to-Peer (P2P) & Social Payments: Revolut-to-Revolut, Revtag, Group Bills/Split Bill/Group Vault, receiving via Payment Links, P2P in-app chat & media",
+                "Outbound Bank Transfers: SEPA/SEPA Instant/FPS/SWIFT/ACH/SPEI/wires, transfer statuses & delays, transfer confirmations/PACS.008/GPI tracking, recalls & cancellations, fees & limits, Pro Outbound",
+                "Direct Debits (SEPA & Bacs), Scheduled & Recurring Transfers, Local Outbound (pagoPA, Bizum outbound, local instant), Push to Card (P2C) Outbound",
+                "APM Transfers: BLIK, MBWay, WERO, Qvik / Request to Pay, Bizum, Tikkie",
+                "Helpers Queues: agents in Helpers do not need to further route chats there; route based on plan"
+            ],
+            "what_not_to_escalate_there": [
+                "Card & Wallet Top-Ups (card, Apple/Google Pay, iDEAL, mobile check, cash deposits) -> [S] Card Payments",
+                "Compliance / AML Holds on Inbound (PENDING_TM_ASSESSMENT or SOF) -> [C] AML Retail / [C] Screening Retail",
+                "Insurance Claim Payouts -> [S] Insurance & Credit",
+                "Payment Blocks due to FinCrime Screening (sanctions/name hit) -> [C] Screening Retail",
+                "Open Banking Linking for Analytics -> [S] Retail Product",
+                "Pocket-to-Pocket Internal Moves (Type = Transfer, Source = Internal) -> Retail Product",
+                "P2P Sent to Wrong Beneficiary (Scam) / Unauthorised P2P / Unauthorised Outbound / Fraudulent P2C -> Account Protection Retail queue for customer's segment",
+                "Authorised Push Payment (APP) Scams -> [C] AP Support APP",
+                "Outbound Stock / Portfolio Transfers (ACATS/DTC) -> [S] Wealth & Trading",
+                "Recurring Subscriptions on Debit Cards (CPA) -> [S] Card Payments",
+                "SEPA Direct Debits (bank account mandates) -> Transfers (Direct Debits)",
+                "Investment asset liquidation or trading order queries (from Helpers) -> [S] Wealth & Trading",
+                "Mexico Transfers (SPEI) -> [S] Mexico Standard / Premium"
+            ],
+            "queues": [
+                "[S] Transfers (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Transfers Helpers / [S] Transfers Advanced - Escalations",
+                "[S] UK Transfers (Elite Calls / Paid Plans & Standard Calls)",
+                "[S] US Transfers (global [S] Transfers queues) / [S] Brazil Transfers / [S] India Transfers",
+                "Transfers - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Referrals (Referrals Team)",
+            "main_topic": "Referral Campaign Status & Tracking, Step Completion Checks, Redeemed State (>48h), Step Ineligibility, Variable & Cross-Border Rewards, Goodwill & Policy Exceptions, Specialised & Product Campaigns, Cross-Border & Cross-Entity Referrals, Promotions & Adoption Campaigns, Technical Bugs & DB Sync",
+            "subtopics": [
+                "Referral Campaign Status & Tracking (Active, Redeemed, Skipped, Recorded, Fraudulent, Missed Deadline)",
+                "Step Completion Checks, Redeemed State (>48h), Step Ineligibility Reasons, Variable & Cross-Border Rewards",
+                "Goodwill & Policy Exceptions: Unlinked invitee, missed deadline (1-month grace period), late sign-up (last 5 days), system bug / technical exceptions, invitee KYC delays (>48h), app vs BO date mismatch",
+                "Specialised & Product Campaigns: Tiered & variable reward campaigns, <18 referral campaigns, upsell rewards (RevPro, Crypto, Trading), RevPoints for referrals",
+                "Cross-Border & Cross-Entity Referrals (MX/JP cross-entity investigations)",
+                "Promotions & Adoption Campaigns (existing users): Cashback campaigns, account promotions, adoption & influencer campaigns, branded & partner campaigns",
+                "Technical Bugs & Database Sync Issues: Sync failures (>48h), card order event missing, false expectation reporting"
+            ],
+            "what_not_to_escalate_there": [
+                "Crypto Trading / Staking Queries -> [S] Wealth & Trading",
+                "Revolut Pro Account Management -> [S] Retail Account",
+                "Flexible Cash Funds / Savings -> Wealth & Trading",
+                "Non-Referral Mexico Queries -> [S] Mexico Standard / Premium",
+                "Both Parties Non-MX (Incorrect Escalation) -> RA buffer agent handles end-to-end without ping-ponging",
+                "In-app Shops, RevPoints redemptions, Perks, Vouchers, Gift Cards, paid plan partner subscriptions -> [S] Retail Product",
+                "Tenured Agent Rule (>12 weeks tenure): raise Tech Jira tickets directly using standard templates instead of escalating to Advanced queues"
+            ],
+            "queues": [
+                "[S] Retail Account (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Retail Account Referrals / [S] Retail Account - Plan Downgrade",
+                "[S] UK Retail Account (Elite Calls / Paid Plans & Standard Calls)",
+                "Retail Account - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Retail Account (Account/Account Management team)",
+            "main_topic": "Personal Details & Profile Management, Price Plans (Upgrades & Downgrades), Revolut <18, Statements/Documents/Confirmation Letters, Account Terminations & Closures, Negative Balance & Overdraft, Joint Accounts, Branch Mobility/Basic Accounts/Local Regulations, Bundles/Campaigns/Termination Deeplink, Referrals & Promotional Campaigns",
+            "subtopics": [
+                "Personal Details & Profile Management: Logged-in address/email/phone updates, legal name & gender updates, Tax Residency & TIN/NIN, Branch Accounts & Local Features (German P-Account)",
+                "Price Plans: Plan upgrades & features, plan downgrades & cancellations, fee disputes & plan goodwill, Vulnerable Customer (VC) exceptions",
+                "Revolut <18 (Kids & Teens): Account creation & linking, <18 card management, allowances & controls, passcode reset for <18, transition at 18",
+                "Statements, Documents & Confirmation Letters: Account statements, official confirmation letters, Fee Information Documents (FID), Lithuania asset declaration",
+                "Account Terminations & Closures: Closure assistance, resolving minor blocker obstacles",
+                "Negative Balance & Account Overdraft Inquiries: Subscription/plan fee negative balance, repayment & debt collection",
+                "Joint Accounts: Creation & invites, management & access, account closure, disputes between co-owners",
+                "Branch Mobility, Basic Accounts & Local Regulations: Bank mobility (FR, ES, IE, DE), basic bank accounts, Italian branch stamp duty, Italian AGCM inquiries",
+                "Bundles, Campaigns & Termination Deeplink: Price plan promotional campaigns, gifting a paid plan, Bluesky (Essentials), missing PoA declarations, deposit insurance (safeguarding), account termination mandatory deeplink (revolut://app/account-terminate)",
+                "Referrals & Promotional Campaigns"
+            ],
+            "what_not_to_escalate_there": [
+                "Anonymous / Locked-Out Users -> [S] Retail Access Recovery",
+                "Onboarding ID / Document Rejections -> [S] KYC Support; Name/Surname Mismatch during Onboarding -> [S] Retail Access Recovery",
+                "Plan Partner Benefits & Subscriptions (Perks) & Airport Lounges / SmartDelay -> [S] Retail Product; Travel Insurance -> [S] Insurance & Credit",
+                "<18 Savings Vaults / Interest -> [S] Wealth & Trading; <18 Bank Transfers / P2P Outbound -> [S] Transfers; <18 Card Payment Disputes/Scams -> [S] Chargeback",
+                "Trading Statements & 1099 Forms -> [S] Wealth & Trading; Consolidated Tax Statements -> Retail Product / Wealth & Trading; Transfer Confirmation / MT103 -> [S] Transfers",
+                "Closure Blockers: Pending Card Payment -> [S] Card Payments; Pending Transfer -> [S] Transfers; Open Chargeback -> [S] Chargeback; Active Trading/Crypto/FCF -> [S] Wealth & Trading; Revolut Pro Active -> [S] Retail Product; Restricted/Offboarded by FinCrime -> [S] FCG Restricted Accounts; Anonymous User -> [S] Retail Access Recovery",
+                "Negative Balance from Offline Card Payments or Top-Up Chargeback Reversals -> [S] Card Payments; Negative Balance from FX Rate Fluctuations -> [S] Wealth & Trading",
+                "Unauthorised Transactions / Fraud on Joint Card -> Chargeback / Account Protection Retail; Kids & Teens (<18) joint context -> [S] Retail Account Standard",
+                "IBAN validity or payment routing post-migration -> [S] Transfers",
+                "Cross-Entity (MX/JP) Referrals with no BO access -> Expansions Cross Entity Referrals"
+            ],
+            "queues": [
+                "[S] Retail Account (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Retail Account Referrals / [S] Retail Account - Plan Downgrade",
+                "[S] UK Retail Account",
+                "Retail Account - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Retail Product (In - App Feature team)",
+            "main_topic": "Revolut Pay (RevPay 2.0), Travel Data Plans (eSIM) & Telco / Mobile Plans, Airport Lounges / Fast Track / SmartDelay, Stays / Experiences / Flights, Rewards / Benefits / Perks (RevPoints, Airline Transfers, Challenges, Partner Subscriptions, Shops & Cashback), Revolut Pro & In-Person Merchant Acquiring, Consent Management & Open Banking, In-App Budgeting / Analytics / Donations / Apple Watch, App Performance & Bugs, App Security/Privacy/Display, Transport PL & In-App Purchases, Kids & Teens In-App Features, Pockets",
+            "subtopics": [
+                "Revolut Pay (RevPay 2.0): Online merchant checkout, RevPay merchant orders, RevPay cashbacks & discounts",
+                "Travel Data Plans (eSIM) & Telco / Mobile Plans: Availability/offer/pricing, installation & setup, free allowances, cancellations/refunds, Mobile Plans (porting, allowances, inclusive benefits) -> escalate Telco & Mobile Plans to [S] Retail Product Telco",
+                "Airport Lounges, Fast Track & SmartDelay: Lounge access, SmartDelay flight registration/pass, fast track, unused pass refunds, airline flight cancellations",
+                "Stays, Experiences & Flights: Hotels/accommodations, experiences & tours, flights search/booking",
+                "Rewards, Benefits & Perks: RevPoints ecosystem, airline partner transfers, RevPoints challenges, paid plan partner subscriptions (Perks), student benefits, Shops & instant cashback, Credit Card & Metal/Ultra cashback",
+                "Revolut Pro & In-Person Merchant Acquiring: Pro account, invoicing & payment links, hardware (Tap to Pay, Reader/Terminal), Revolut Restaurant & POS",
+                "Consent Management & Open Banking (AISP, PISP)",
+                "In-App Budgeting, Analytics & Integrations: Budgeting & analytics, Open Banking aggregation, donations & charity, Apple Watch & smartwatches",
+                "App Performance & Bugs: General app bugs/crashes for logged-in users, app updates & general outages, global UI / navigation",
+                "App Security, Privacy & Display: Balance blurring/hiding, hiding/unhiding transactions, secret accounts, device permissions, notification management",
+                "Transport PL & In-App Purchases: Transport PL, ordering Apple hardware via app promotions",
+                "Kids & Teens (<18) In-App Features: Pockets, challenges & tasks, analytics & budgeting, rewards & shops, bundles, avatars",
+                "Pockets: Creating/deleting/renaming/sharing pockets, spare change round-ups, Bills Pocket"
+            ],
+            "what_not_to_escalate_there": [
+                "Debit/Credit Card Processing (in-store or 16-digit PAN/CVV) -> [S] Card Payments; Disputing Card Payments -> [S] Chargeback",
+                "eSIM network/active connectivity faults -> troubleshoot & escalate (Tier 2) to [S] Retail Product - Telco; eSIM app crashes/tech bugs -> partner support (1Global); VAT invoices for eSIM -> request from 1Global; user device hardware/carrier locks -> phone manufacturer/carrier",
+                "Flight delay insurance claims -> [S] Insurance & Credit",
+                "Card debits/processing failures on Stays -> [S] Card Payments; travel insurance during trip -> [S] Insurance & Credit",
+                "Non-RevPoints Stays bookings -> [S] Stays General; Paid plan downgrades/fee disputes -> [S] Retail Account Downgrade Plan; standard sign-up referral bonuses -> [S] Retail Account Referrals; Revolut Credit Card cashback -> [S] Insurance & Credit",
+                "Pro inbound/outbound bank transfers -> [S] Transfers; Pro account termination as blocker -> Retail Account",
+                "Easy Bank Top-Ups / Open Banking transfer -> [S] Transfers; Total Savings / FCF -> [S] Wealth & Trading; Move Money internal transfer failures -> originating product vertical (do NOT pass to Retail Product)",
+                "Login/authentication/access bugs -> [S] Retail Access Recovery; vertical-specific feature bugs -> relevant vertical",
+                "Biometric login failure -> [S] Retail Access Recovery",
+                "Transport PL card payment decline -> [S] Card Payments",
+                "<18 account creation/parent linking/passcode resets -> [S] Retail Account; <18 savings -> [S] Wealth & Trading",
+                "Pocket issues related to crypto / interest / APY / round-up into crypto -> [S] Wealth & Trading; failed scheduled direct debit from Bills Pocket -> [S] Transfers; cannot close account due to open pocket -> [S] Retail Account; Group Pocket locked due to restriction -> FinCrime"
+            ],
+            "queues": [
+                "[S] Retail Product (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] Retail Product - Telco",
+                "[S] UK Retail Product (Elite Calls / Paid Plans & Standard Calls)",
+                "Retail Product - Inbound Email / SGP - Inbound Email"
+            ]
+        },
+        {
+            "vertical": "Stays & Experiences (Stays team)",
+            "main_topic": "Stays Bookings & General Issues, Stays Modifications & Cancellations, Stays Relocations (Urgent Check-In Issues), Stays Rewards/Cashback/RevPoints, Experiences (Tours, Attractions & Activities), Phone Support Exclusion & Booking Verification, Advanced Provider Escalations (Partner Calls)",
+            "subtopics": [
+                "Stays Bookings & General Issues: Inquiries before booking, booking in-app errors/failures, confirmations & receipts, complaints on accommodation, hotel overcharges & charges",
+                "Stays Modifications & Cancellations: Date & room changes, booking cancellations, user disliked accommodation & wants to cancel (route to Modifications)",
+                "Stays Relocations (Urgent Check-In Issues): Denied check-in, emergency complaints in relocations -> urgent relocations handled in [S] Stays Priority (or [S] Stays Modifications) regardless of plan tier",
+                "Stays Rewards, Cashback & RevPoints: Instant cashback, RevPoints on stays",
+                "Experiences: Booking & vouchers, modifications & cancellations, complaints & refunds",
+                "Phone Support Exclusion & Booking Verification: Verifying stays via Metabase before triage, search filters/amenities inquiries",
+                "Advanced Provider Escalations (Partner Calls): Expedia / Nuitee / Viator direct interventions"
+            ],
+            "what_not_to_escalate_there": [
+                "Non-Revolut Bookings (Booking.com, Airbnb, direct) -> explain directly; do not escalate",
+                "Card Transaction Declines at Property POS -> [S] Card Payments",
+                "Travel Insurance Claims during Trip / CFAR Claims -> [S] Insurance & Credit",
+                "Disputing Card Transactions with Bank -> [S] Retail Product - Inbound Email",
+                "Non-Stays Flights / Packages -> [S] Retail Product",
+                "Customer simply dislikes hotel (not denied check-in) -> Emergency Complaints Flow in [S] Stays Standard / Priority (not urgent Relocations)",
+                "General RevPoints / Perks (Non-Stays) -> [S] Retail Product; FCF / Vaults -> Wealth & Trading",
+                "Airport Lounges & Fast Track -> [S] Retail Product; Events/Concert Ticket Cover -> [S] Insurance & Credit",
+                "MANDATORY RULE: Never escalate Stays queries, cancellations, modifications, or urgent relocations to Phone Support queues; handle strictly via Chat"
+            ],
+            "queues": [
+                "[S] Stays General / [S] Stays Modifications / [S] Stays Priority",
+                "[S] Retail Product (Standard / Paid Plans / Priority / Elite / Outage / Ongoing Issue)",
+                "[S] UK Retail Product",
+                "Retail Product - Inbound Email / SGP - Inbound Email"
+            ]
+        }
+    ],
+    "expansions_escalations": {
+        "general_rules": [
+            "Do NOT escalate chats from dedicated Expansion Queues (JP/IN/MX, and US Expansion queues like W&T / CHB) to Advanced Escalations queues.",
+            "Expansions teams (JP/IN/MX) must raise tickets directly to entity CXM if confluence is missing/unclear.",
+            "Exception (Global Queues): If an expansion topic is actively handled in a Global Queue (e.g. US Retail Account / Retail Product) or agent is acting as buffer for global queue, follow standard global flow (including advanced escalations)."
+        ],
+        "country_specific": {
+            "Japan": [
+                "Japan agents in expansion clusters silently escalate queries; global agents getting JP chats escalate to specific JP vertical queue based on plan & topic.",
+                "Covers Card, Card Payments, Chargeback, Top-up, Transfers, Wealth & Trading, Retail Product.",
+                "Retail Account Scope: Anonymous users in JP, phone number change, account termination (guide user on closure), address change across entities.",
+                "Japan KYC Scope: Address change within JP, legal name change/correction, MyNumber/ID verification issues & FAQs, verification issues (KYC failed, data mismatch, KYC pending, duplicates), POA/OCC restrictions & KYC remediation.",
+                "Mandatory JP Residency Check (Escalate to [S] Japan KYC): foreign address card delivery, foreign phone number change (non-+81), living/working abroad or salary from abroad, onboarded while abroad, MyNumber card stamped for moving abroad.",
+                "ATO or scam in JP -> escalate directly to [C] Account Protection Retail; JP FinCrime/Screening -> relevant global FinCrime queues; Non-JP entity customers -> Global queues."
+            ],
+            "US": [
+                "US Expansions queues are handled by trained global agents only (marked with US labels).",
+                "Routing is determined strictly by customer's registered entity in BO, NOT base currency. United States -> Revolut Technologies Inc; Bermuda / Cayman Islands -> NOT Revolut Technologies Inc -> Global queue.",
+                "1. Trading (W&T): US Trading & Robo-Advisor -> [S] US Expansion - W&T",
+                "2. Savings Vaults: US Savings / CRB Vaults -> Global Wealth & Trading queues (do NOT route to US Expansion)",
+                "3. Card Payments & Top-Ups: Cards, Card Payments, card top-ups within CP scope (including Plaid ACH top-ups) -> Global Card Payments queues",
+                "4. Chargebacks: Card disputes & unauthorized debits -> [S] US Expansion Chargeback",
+                "5. Transfers: Domestic ACH, wires, direct deposits -> Global Transfers queues",
+                "6. Retail Account, Retail Product & Referrals -> US-specific [S] [SPEC] Global Queues",
+                "7. US Customer IVR -> Follow [R] US - IVR Flow",
+                "Do NOT escalate non-US cases to US expansion queue."
+            ],
+            "Mexico": [
+                "1. Transfers / SMS / Top-ups / W&T",
+                "2. Cards / Card Payment / Chargeback",
+                "3. Retail Account / Retail Product / Referral",
+                "4. Referral cases",
+                "Route to [S] Mexico Standard / [S] Mexico Premium. Do NOT escalate Mexico chats to global queues."
+            ],
+            "India": [
+                "Only India queries; handle in India queues and do NOT escalate to Global Chat queues.",
+                "1. Transfers / Top-ups / W&T",
+                "2. LiteApp/LiteCrypto/LiteReceiveOnly",
+                "3. Cards / Card Payment / Chargeback",
+                "4. Retail Account / Retail Product / Referral",
+                "5. Referral cases",
+                "6. Email and Complaints cases",
+                "7. SPO",
+                "Do NOT escalate to internal cross-check channels: [CPT], India Support Cross Checks, [SWIFT] Cross Border Payments, India - Payments Investigations, [CPT] IN Cross checks."
+            ],
+            "Expansions Cross Entity Referrals": [
+                "Global RA agent without JP/MX access escalates referral involving JP/MX entity to Expansions Cross Entity Referrals.",
+                "If referrer and invitee are both non-MX/non-JP -> incorrect escalation; RA buffer agent handles end-to-end.",
+                "Scenario 1 (Referrer non-JP/MX, Invitee JP/MX) -> escalate to Expansions Cross Entity Referrals.",
+                "Scenario 2 (Referrer JP/MX, Invitee non-JP/MX) -> escalate ONLY if manual reward needed."
+            ]
+        }
+    },
+    "horizontal_escalations": {
+        "Revolut App": [
+            "Revolut AI financial assistant (report feedback in #air-assistant-bugs-and-feedback-hunt)",
+            "Chat History (downloading chat transcription)"
+        ],
+        "Business escalations": [
+            "Revolut business account / Your Finances Revolut Business -> follow [R&B] Escalations from Retail to Business"
+        ],
+        "Tax reporting": [
+            "FATCA TIN declaration -> KYC team; Savings tax reporting -> W&T; Cashback/My Cashback -> Retail Product; Withholding tax -> Retail Account"
+        ],
+        "Credit Questions": [
+            "Non-operational markets credit report/history/score -> [R] Credit Escalations 1.2; 'free cash'/financial help -> [R] Vulnerable Customers; soft/general credit checks during onboarding -> do NOT escalate to Credit Team"
+        ],
+        "Statements / Self Termination": [
+            "Self-download statements & self termination from app"
+        ],
+        "General Policies": [
+            "Bereavement (do not escalate to Retail Account)",
+            "Power of Attorney (LT spousal consent for W&T -> W&T team; otherwise [Support] Power of Attorney Process SD)"
+        ],
+        "Legal Queries": [
+            "Garnishment protection, OGNIVO/Bailiff, debt collection protection, tax reporting to authorities, DSAR/SAR, bank guarantee, letters of reference, account confirmation FAQ, annual report, signed/stamped docs, certificate of good standing, local account details, fiscal/VAT code/LEI, branch address, banking license - Lithuania"
+        ],
+        "Scams & Fraud": [
+            "Lost/stolen devices & unrecognised activity",
+            "Phishing & Scam & Fraud / cybercrime reporting"
+        ],
+        "Customer Contact Automation Team": [
+            "Help Center broken links/outdated info, FAQ issues, RITA/Dexter chatbot feedback, Formbuilder feedback -> team SD"
+        ],
+        "Translator issues": [
+            "Incorrect translation (not a technical bug) -> #copy-quality-control-feedback (EN) or #report-localisation-issues (other languages)"
+        ]
+    },
+    "fincrime_escalations": {
+        "horizontal_rule": "All FinCrime Support Teams handle these cases - NO ESCALATION REQUIRED when only remaining step is Agent review - SM or MLRO approval (SMA/MLRO ticket names) and user asks for status update with no UAR/FLAMCA/Fraud.",
+        "customer_facing_name_rule": "NEVER use internal FinCrime team names with customers (tipping off / #forbidden_words). Use allowed customer-facing names (e.g. 'Account Services team', 'Verification team', 'Escalations team', 'Transfers/Top-ups/Card Payments team').",
+        "teams": {
+            "AP L1 (Account Protection L1)": {
+                "in_scope": "APP Retail scope (authorised push payment cases: internal/external outbound transfers, P2C, crypto withdrawals, BLIK/OTP scam payments, eligible RevPayments).",
+                "out_of_scope_or_do_not_escalate": "Poor/unexpected quality goods, RevPayments out of APP scope -> Retail Product, EXTERNAL_MANDATE -> Transfers, card payment scams -> [R] AP - Chargeback cooperation, Pay Later instalments -> Chargebacks Disputes, active UAR/offboarding exceptions apply.",
+                "queues": [
+                    "[C] Account Protection Retail - Standard / Paid Plans / Elite / Japan / Priority / Private / Ongoing Issue / Outage",
+                    "[C] FRAUD / [C] UK FRAUD Phone queues"
+                ]
+            },
+            "Account Takeover (ATO)": {
+                "in_scope": "Unrecognised activity/devices, personal details changed without consent, unauthorised outbound transfers/crypto withdrawals, unrecognised OTP/BLIK with lost/stolen device, unrecognised exchanges/RevPayments, phishing where user clicked/shared info, lost/stolen device reports.",
+                "out_of_scope_or_do_not_escalate": "Phishing where user did NOT click/share info -> follow flow, non-ATO card payments -> Chargeback.",
+                "queues": [
+                    "[C] Account Protection Retail - Standard / Paid Plans / Elite / Japan / Escalations / Priority / Private / Ongoing Issue / Outage",
+                    "AP L1 SD Jira"
+                ]
+            },
+            "Account Protection — PV (Payment Verification)": {
+                "in_scope": "Pending/declined outbound transactions with PENDING_TM_ASSESSMENT under RAP-001/002/003, TM-8004..8175, SUSPICIOUS_TRANSACTION_USER_CONFIRMED under TM-8006, TM-9016 on business accounts, outbound lock after manual alerts/onboarding APP restriction, PV_Protocol.",
+                "out_of_scope_or_do_not_escalate": "If alert cleared and External Ref generated / Crypto Withdrawal and timeframe passed -> do not escalate to AP L1.",
+                "queues": [
+                    "[C] AP Support - Payment Verification / PV Mexico / PV Japan",
+                    "[C] Screening Crypto / BM Verification - Elite",
+                    "[C] PV Phone - Business",
+                    "[C] FRAUD / [C] UK FRAUD Phone queues"
+                ]
+            },
+            "AML (Anti-Money Laundering)": {
+                "in_scope": "Accounts restricted with EDD Inbound / EDD Unresponsive Restriction, active AML/CTF TM reviews with SOF/SOW/POT RFI, CDD/EDD/Natural Person CDD reviews (SOF/POT/SM Approval/RBI), FLAMCA restrictions.",
+                "out_of_scope_or_do_not_escalate": "Customer Due Diligence (KYC Onboarding) active for proof of address / TIN etc. -> escalate to KYC Team.",
+                "queues": [
+                    "[C] AML Retail - Standard / Paid Plans / Elite / Priority / Private / Source of Funds / Proactive EDD / Escalations / Ongoing Issue / Outage",
+                    "[C] FC General / [C] UK FC Phone queues"
+                ]
+            },
+            "Financial Investigation Unit (FIU)": {
+                "in_scope": "FIU Services (UARs/SARs, NCA/FIU filing, offboarding for T&Cs breach) and FIU Support (customer communication during FIU investigation/offboarding, fund retrieval). Suicidal threat -> mandatory Suicidal User Report + [R&B] Suicidal / Abused Customers Jira (Blocker).",
+                "out_of_scope_or_do_not_escalate": "Offboarding reasons EXPIRED_RIGHT_TO_REMAIN, KYC_NOT_FINISHED, SSN_NOT_PROVIDED -> escalate to [C] KYC Retail queue. Non-restriction/non-offboarding product queries -> resolve normally and de-escalate.",
+                "queues": [
+                    "[C] FIU Retail - Standard / Paid Plans / Priority / Private / Elite / Escalations / Japan / Pending 2LoD / Ongoing Issue / Outage",
+                    "[C] Abusers",
+                    "[C] FIU / [C] UK FIU Phone queues"
+                ]
+            },
+            "KYC (Know Your Customer)": {
+                "in_scope": "KYC status FAILED needing verification, KYC/CDD/ODD inbound restrictions, locked profiles with [KYC] Multiple people / Duplicate account / Suspicious KYC, account name change, offboarding reasons EXPIRED_RIGHT_TO_REMAIN / KYC_NOT_FINISHED / SSN_NOT_PROVIDED, Inbound Lock / External Transfer Only / Pending termination with SENTINEL_HIGH_RISK or KYC_FAILED_ON_ONBOARDING.",
+                "out_of_scope_or_do_not_escalate": "1. Do NOT escalate anonymous chats to KYC! 2. Do NOT escalate address change requests to KYC (unless across entity change). 3. If SENTINEL_HIGH_RISK or KYC_FAILED_ON_ONBOARDING has no restrictions and KYC passed -> do NOT escalate to KYC.",
+                "queues": [
+                    "[C] KYC Retail Standard / Paid Plans / Priority / Private / Elite / Escalations / Remediation / Ongoing Issue / Outage",
+                    "[S] KYC Retail - Japan",
+                    "[C] FC General / [C] UK FC Phone queues"
+                ]
+            },
+            "Transaction Monitoring Retail (TM)": {
+                "in_scope": "TM related cases per FinCrime procedures.",
+                "out_of_scope_or_do_not_escalate": "Never escalate directly to a TM Retail queue! Exception: TM-0316 + outbound transaction with Pending TM Assessment reason code -> escalate to [C] AFR IF Retail queues. CNP/Fraud Association -> AFR IF; Pending TM Assessment inbound -> AFR IF; Card Topup only restriction -> EE TAS.",
+                "queues": [
+                    "[C] Acquiring Fraud Retail (via exception)",
+                    "[C] AP Support - Payment Verification"
+                ]
+            },
+            "Chargebacks": {
+                "in_scope": "Fraudulent/unrecognised/scam card payments, Rev<18 unrecognised card payments, merchant disputes, chargeback form/updates, top-up chargebacks, chargeback collections.",
+                "out_of_scope_or_do_not_escalate": "Never raise tickets to Chargeback team for a locked account where the lock reason is chargeback-related.",
+                "queues": [
+                    "[S] Chargeback Standard / Paid Plans / Priority / Elite / Ongoing Issue / Outage",
+                    "[S] Chargeback Advanced - Escalations",
+                    "[S] US Expansion - Chargeback"
+                ]
+            },
+            "Crypto (Screening) & Screening": {
+                "in_scope": "Screening alerts (SCR-0508, TM-4004, TM-4005, TM-0026, TM-0027, TM-4011, TM-4012) and pending transfers with PENDING_TM_ASSESSMENT / SUSPICIOUS_ACTIVITY / BLOCKED_COUNTRY / BANK_IDENTIFIER / RESTRICTED_LOCATION.",
+                "out_of_scope_or_do_not_escalate": "Do NOT escalate chats to [C] Screening Crypto or [C] Blockchain Monitoring! Route based on user's plan to Screening Retail queues.",
+                "queues": [
+                    "[C] Screening Retail - L1 / Paid Plans / Priority / Elite / Standard / Private / Escalations / Ongoing Issue / Outage / Mexico",
+                    "[C] FC General / [C] UK FC Phone queues"
+                ]
+            },
+            "External Enquiries (EE) / AFR IF / Account Seizures (CO & Seizures)": {
+                "in_scope": "External_Enquiries restriction / FLAMCA + EE-001 or ENF-0009; Account Seizures, bailiffs, tax debts, balances held by FinCrime, warrants -> EE TAS / CO & Seizures queues.",
+                "out_of_scope_or_do_not_escalate": "If tags 'Escalated to FIU', 'Offboarding request', or 'Fraud' applied, or CC limit/blacklist failures, or BO note indicates fraud/fraud report/fraud recall (FraudOps).",
+                "queues": [
+                    "[C] Acquiring Fraud Retail - Japan / Elite / Paid Plans / Priority / Standard / Private / Escalations / Ongoing Issue / Outage",
+                    "[C] CO & Seizures Retail - Elite / Paid Plans / Priority / Standard / Private / Escalations / Outage / France / Ongoing Issue",
+                    "[C] FIU / [C] UK FIU Phone queues"
+                ]
+            }
+        }
+    }
+}
+
+
+def search_escalations(query: str) -> list[dict[str, Any]]:
+    """Search across retail, expansions, horizontal, and fincrime escalation rules."""
+    q = query.strip().lower()
+    if not q:
+        return []
+    matches: list[dict[str, Any]] = []
+
+    for item in ESCALATIONS_DATA.get("retail_escalations", []):
+        blob = json.dumps(item, ensure_ascii=False).lower()
+        if q in blob:
+            matches.append({"section": "retail_escalations", "entry": item})
+
+    for key, val in ESCALATIONS_DATA.get("expansions_escalations", {}).get("country_specific", {}).items():
+        if q in key.lower() or q in json.dumps(val, ensure_ascii=False).lower():
+            matches.append({"section": f"expansions:{key}", "entry": val})
+
+    for scope, topics in ESCALATIONS_DATA.get("horizontal_escalations", {}).items():
+        if q in scope.lower() or q in json.dumps(topics, ensure_ascii=False).lower():
+            matches.append({"section": f"horizontal:{scope}", "entry": topics})
+
+    for team, details in ESCALATIONS_DATA.get("fincrime_escalations", {}).get("teams", {}).items():
+        if q in team.lower() or q in json.dumps(details, ensure_ascii=False).lower():
+            matches.append({"section": f"fincrime:{team}", "entry": details})
+
+    return matches
+
+
+if __name__ == "__main__":
+    import sys
+
+    term = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "chargeback"
+    results = search_escalations(term)
+    print(f"Found {len(results)} match(es) for '{term}'")
+    for r in results:
+        print("-", r["section"])
